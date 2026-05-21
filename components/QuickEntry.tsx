@@ -15,15 +15,7 @@ const catLabels: Record<Cat, string> = {
   caixa: 'Caixa',
 }
 
-const catIcons: Record<Cat, string> = {
-  venda: '💰',
-  insumo: '🛒',
-  funcionario: '👷',
-  conta: '📄',
-  caixa: '🏦',
-}
-
-const inputCls = 'w-full px-3 py-2 border border-gray-300 dark:border-gray-700 dark:bg-zinc-900 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary'
+const inputCls = 'w-full px-3 py-2 border border-cream-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary'
 
 const FORNECEDORES_COMUNS = ['PMG', 'Sacolão', 'CristauLat', 'Atacado', 'Bom Baiano', 'Lenha', 'Embalagens', 'JMW', 'Mega G']
 const FUNCIONARIOS_COMUNS = ['Priscila', 'Will', 'Soraya', 'Mauricio', 'Leandro', 'Nickolas', 'Moises']
@@ -110,47 +102,42 @@ export default function QuickEntry() {
     : []
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 p-3 sm:p-4 shadow-sm h-full min-w-0">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Lançamento Rápido</h3>
-        {success && <span className="text-xs text-green-600 dark:text-green-400 font-semibold">✓ Salvo!</span>}
+    <div className="bg-white dark:bg-zinc-900 rounded-xl border border-cream-200 dark:border-zinc-800 p-4 h-full min-w-0">
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Novo lançamento</h3>
+        {success && <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Salvo</span>}
       </div>
 
-      {/* Category tabs */}
-      <div className="grid grid-cols-3 sm:grid-cols-5 gap-1 mb-4 bg-gray-100 dark:bg-zinc-800 rounded-lg p-1">
+      <div className="grid grid-cols-2 min-[420px]:grid-cols-5 gap-1 mb-4 bg-cream-50 dark:bg-zinc-800 rounded-lg p-1">
         {(['venda', 'insumo', 'funcionario', 'conta', 'caixa'] as Cat[]).map(c => (
           <button
             key={c}
             type="button"
             onClick={() => { setCat(c); resetForm() }}
-            title={catLabels[c]}
-            className={`min-w-0 py-1.5 rounded-md text-xs font-medium transition-colors flex flex-col items-center gap-0.5 ${
+            className={`min-w-0 px-2 py-1.5 rounded-md text-[11px] font-medium transition-colors ${
               cat === c
                 ? 'bg-white dark:bg-zinc-700 text-primary shadow-sm'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
             }`}
           >
-            <span>{catIcons[c]}</span>
-            <span className="w-full px-1 text-[10px] leading-none truncate">{catLabels[c]}</span>
+            <span className="block truncate">{catLabels[c]}</span>
           </button>
         ))}
       </div>
 
       <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
-          {/* Date */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-3">
           <div>
             <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Data</label>
             <input type="date" value={date} onChange={e => setDate(e.target.value)} className={inputCls} />
           </div>
 
-          {/* VENDA */}
           {cat === 'venda' && (
             <>
-              <CurrencyInput label="Total Bruto" value={valor} onChange={setValor} />
-              <CurrencyInput label="À Vista" value={avista} onChange={setAvista} />
+              <CurrencyInput label="Total bruto" value={valor} onChange={setValor} />
+              <CurrencyInput label="À vista" value={avista} onChange={setAvista} />
               <div>
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Nº Pizzas</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Pizzas</label>
                 <input
                   type="number" min="0" value={pizzas || ''}
                   onChange={e => setPizzas(parseInt(e.target.value) || 0)}
@@ -158,14 +145,13 @@ export default function QuickEntry() {
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Observação (opcional)</label>
+                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Observação</label>
                 <input type="text" value={descricao} onChange={e => setDescricao(e.target.value)}
-                  placeholder="Ex: Dia especial..." className={inputCls} />
+                  placeholder="Opcional" className={inputCls} />
               </div>
             </>
           )}
 
-          {/* INSUMO / FUNCIONARIO / CONTA */}
           {(cat === 'insumo' || cat === 'funcionario' || cat === 'conta') && (
             <>
               <CurrencyInput label="Valor" value={valor} onChange={setValor} />
@@ -176,7 +162,7 @@ export default function QuickEntry() {
                 <input
                   type="text" value={descricao} onChange={e => setDescricao(e.target.value)}
                   list={`sugs-${cat}`}
-                  placeholder={cat === 'insumo' ? 'PMG, Sacolão...' : cat === 'funcionario' ? 'Nome' : 'Aluguel, Luz...'}
+                  placeholder={cat === 'insumo' ? 'PMG, Sacolão...' : cat === 'funcionario' ? 'Nome' : 'Aluguel, luz...'}
                   className={inputCls}
                 />
                 {suggestions.length > 0 && (
@@ -202,15 +188,14 @@ export default function QuickEntry() {
             </>
           )}
 
-          {/* CAIXA */}
           {cat === 'caixa' && (
             <>
-              <CurrencyInput label="Saldo Inicial" value={saldoInicial} onChange={setSaldoInicial} />
+              <CurrencyInput label="Saldo inicial" value={saldoInicial} onChange={setSaldoInicial} />
               <CurrencyInput label="Entradas" value={entradas} onChange={setEntradas} />
               <CurrencyInput label="Saídas" value={saidas} onChange={setSaidas} />
               <div>
                 <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Fechamento</label>
-                <div className="w-full px-3 py-2 border border-gray-200 dark:border-zinc-700 rounded-lg bg-gray-50 dark:bg-zinc-800 text-sm font-semibold text-gray-900 dark:text-white">
+                <div className="w-full px-3 py-2 border border-cream-200 dark:border-zinc-700 rounded-lg bg-cream-50 dark:bg-zinc-800 text-sm font-semibold text-gray-900 dark:text-white">
                   R$ {(Math.round((saldoInicial + entradas - saidas) * 100) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </div>
               </div>
@@ -226,9 +211,9 @@ export default function QuickEntry() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-dark disabled:opacity-50 transition-colors"
+          className="w-full py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark disabled:opacity-50 transition-colors"
         >
-          {submitting ? 'Salvando...' : `+ ${catLabels[cat]}`}
+          {submitting ? 'Salvando...' : `Adicionar ${catLabels[cat]}`}
         </button>
       </form>
     </div>

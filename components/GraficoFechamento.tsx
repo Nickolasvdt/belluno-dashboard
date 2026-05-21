@@ -8,7 +8,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from 'recharts'
 import { useTheme } from '@/context/ThemeContext'
@@ -33,7 +32,7 @@ export default function GraficoFechamento({ dados }: { dados: Dado[] }) {
   const tooltipText = isDark ? '#f4f4f5' : '#1c1c1c'
 
   return (
-    <ResponsiveContainer width="100%" height={220}>
+    <ResponsiveContainer width="100%" height={210}>
       <ComposedChart data={dados} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
         <XAxis dataKey="mes" tick={{ fontSize: 11, fill: textColor }} axisLine={false} tickLine={false} />
@@ -44,10 +43,9 @@ export default function GraficoFechamento({ dados }: { dados: Dado[] }) {
           labelStyle={{ color: tooltipText, fontWeight: 600, marginBottom: 4 }}
           cursor={{ fill: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)' }}
         />
-        <Legend wrapperStyle={{ fontSize: 11, color: textColor, paddingTop: 8 }} />
-        <Bar dataKey="receita" name="Receita" fill="#10b981" radius={[4, 4, 0, 0]} opacity={isDark ? 0.8 : 0.85} />
-        <Bar dataKey="despesa" name="Despesa" fill="#8B2020" radius={[4, 4, 0, 0]} opacity={isDark ? 0.8 : 0.85} />
-        <Line dataKey="lucro" name="Lucro" stroke="#d97706" strokeWidth={2.5} dot={{ r: 4, fill: '#d97706', strokeWidth: 2, stroke: tooltipBg }} activeDot={{ r: 5 }} />
+        <Bar dataKey="receita" name="Receita" fill="#059669" radius={[4, 4, 0, 0]} opacity={isDark ? 0.7 : 0.75} />
+        <Bar dataKey="despesa" name="Despesa" fill="#8B2020" radius={[4, 4, 0, 0]} opacity={isDark ? 0.55 : 0.62} />
+        <Line dataKey="lucro" name="Lucro" stroke="#71717a" strokeWidth={2} dot={{ r: 3, fill: '#71717a', strokeWidth: 2, stroke: tooltipBg }} activeDot={{ r: 4 }} />
       </ComposedChart>
     </ResponsiveContainer>
   )

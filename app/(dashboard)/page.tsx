@@ -111,24 +111,9 @@ async function getDashboardData() {
     totalReceita, receitaLiquida, lucroLiquido, cmvPct, totalPizzas,
     totalFunc, totalFixas, totalInsumos, totalDespesa, totalTaxas,
     saldoAtual,
-    dadosMensais, activity: activity.slice(0, 12),
+    dadosMensais, activity: activity.slice(0, 8),
     contasPendentes, mesAtual: format(hoje, 'MMMM yyyy', { locale: ptBR }),
   }
-}
-
-const dotColor: Record<string, string> = {
-  'Venda':      'bg-emerald-500',
-  'Insumo':     'bg-sky-500',
-  'Funcionário':'bg-violet-500',
-  'Conta Fixa': 'bg-amber-500',
-  'Caixa':      'bg-zinc-400',
-}
-const typeColor: Record<string, string> = {
-  'Venda':      'text-emerald-600 dark:text-emerald-400',
-  'Insumo':     'text-sky-600 dark:text-sky-400',
-  'Funcionário':'text-violet-600 dark:text-violet-400',
-  'Conta Fixa': 'text-amber-600 dark:text-amber-400',
-  'Caixa':      'text-gray-400 dark:text-zinc-600',
 }
 
 export default async function DashboardPage() {
@@ -139,257 +124,147 @@ export default async function DashboardPage() {
   const hoje = new Date()
   const margem = d.receitaLiquida > 0 ? (d.lucroLiquido / d.receitaLiquida) * 100 : 0
   const ticketMedio = d.totalPizzas > 0 ? round2(d.totalReceita / d.totalPizzas) : 0
+  const despesasPct = d.totalReceita > 0 ? round2((d.totalDespesa / d.totalReceita) * 100) : 0
 
-  const cardCls = 'bg-white dark:bg-zinc-900 rounded-2xl border border-cream-200 dark:border-zinc-800/50 shadow-sm'
+  const cardCls = 'bg-white dark:bg-zinc-900 rounded-xl border border-cream-200 dark:border-zinc-800/60'
+  const labelCls = 'text-[11px] font-medium uppercase tracking-wide text-gray-400 dark:text-zinc-600'
+  const positive = d.lucroLiquido >= 0
+
+  const essentials = [
+    { label: 'Receita líquida', value: `R$ ${fmt(d.receitaLiquida)}` },
+    { label: 'Despesas', value: `R$ ${fmt(d.totalDespesa)}` },
+    { label: 'Pizzas', value: String(d.totalPizzas) },
+  ]
+
+  const indicators = [
+    {
+      label: 'CMV',
+      value: `${d.cmvPct.toFixed(1)}%`,
+      hint: 'Meta até 30%',
+      tone: d.cmvPct <= 30 ? 'text-emerald-600 dark:text-emerald-400' : d.cmvPct <= 40 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400',
+    },
+    {
+      label: 'Saldo no caixa',
+      value: `R$ ${fmt(d.saldoAtual)}`,
+      hint: 'Último fechamento',
+      tone: d.saldoAtual >= 0 ? 'text-gray-900 dark:text-white' : 'text-red-600 dark:text-red-400',
+    },
+    {
+      label: 'Taxas',
+      value: `R$ ${fmt(d.totalTaxas)}`,
+      hint: 'Cartões e plataformas',
+      tone: 'text-gray-900 dark:text-white',
+    },
+    {
+      label: 'Ticket médio',
+      value: d.totalPizzas > 0 ? `R$ ${fmt(ticketMedio)}` : 'R$ 0,00',
+      hint: 'Por pizza',
+      tone: 'text-gray-900 dark:text-white',
+    },
+  ]
+
+  const breakdown = [
+    { label: 'Funcionários', value: `R$ ${fmt(d.totalFunc)}` },
+    { label: 'Contas fixas', value: `R$ ${fmt(d.totalFixas)}` },
+    { label: 'Insumos', value: `R$ ${fmt(d.totalInsumos)}` },
+    { label: 'Receita bruta', value: `R$ ${fmt(d.totalReceita)}` },
+  ]
 
   return (
-    <div className="space-y-5 min-w-0">
+    <div className="space-y-4 min-w-0">
+      <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
+        <div>
+          <p className={labelCls}>Belluno Pizzaria</p>
+          <h1 className="text-xl sm:text-2xl font-display font-bold text-gray-900 dark:text-white leading-tight">
+            Visão geral
+          </h1>
+        </div>
+        <p className="text-sm text-gray-500 dark:text-zinc-500 capitalize">{d.mesAtual}</p>
+      </header>
 
-      {/* ── Header ── */}
-      <div>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-primary/60 mb-1.5">
-          Belluno Pizzaria
-        </p>
-        <h1 className="text-xl sm:text-2xl font-display font-bold text-gray-900 dark:text-white leading-tight">
-          Visão Geral{' '}
-          <span className="block sm:inline font-display italic font-normal text-gray-400 dark:text-zinc-600 text-lg sm:text-xl">
-            — {d.mesAtual}
-          </span>
-        </h1>
-      </div>
-
-      {/* ── Hero + Quick Entry ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-
-        {/* Hero Result Card */}
-        <div
-          className="lg:col-span-2 relative overflow-hidden rounded-3xl shadow-xl shadow-primary/20"
-          style={{ background: 'linear-gradient(135deg, #8B2020 0%, #4e0f0f 100%)' }}
-        >
-          {/* Decorative circles */}
-          <div className="absolute -right-20 -top-20 w-72 h-72 rounded-full bg-white/[0.04] pointer-events-none" />
-          <div className="absolute right-10 -bottom-24 w-60 h-60 rounded-full bg-white/[0.04] pointer-events-none" />
-          <div className="absolute -left-10 bottom-6 w-36 h-36 rounded-full bg-white/[0.03] pointer-events-none" />
-
-          <div className="relative p-5 md:p-7">
-            <p className="font-display italic text-white/40 text-xs md:text-sm mb-4 md:mb-5 tracking-wide">
-              Risultati · {d.mesAtual}
-            </p>
-
-            <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-start min-[420px]:justify-between mb-5 md:mb-7 gap-3">
-              <div className="min-w-0">
-                <p className="text-[11px] text-white/40 uppercase tracking-[0.18em] font-medium mb-2">
-                  Lucro Líquido
-                </p>
-                <p className={`text-3xl min-[420px]:text-4xl md:text-5xl font-bold tracking-tight leading-none break-words ${d.lucroLiquido >= 0 ? 'text-white' : 'text-red-200'}`}>
-                  {d.lucroLiquido < 0 && <span className="text-2xl md:text-3xl mr-1 text-red-300">−</span>}
-                  R$ {fmt(Math.abs(d.lucroLiquido))}
-                </p>
-              </div>
-              <span className={`mt-1 px-2.5 py-1 rounded-full text-xs font-semibold border whitespace-nowrap shrink-0 ${
-                d.lucroLiquido >= 0
-                  ? 'bg-white/10 border-white/20 text-white'
-                  : 'bg-red-950/60 border-red-500/30 text-red-300'
-              }`}>
-                {d.lucroLiquido >= 0 ? '✦ Positivo' : '↓ Negativo'}
-              </span>
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className={`lg:col-span-2 ${cardCls} p-5`}>
+          <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-start min-[420px]:justify-between gap-3">
+            <div className="min-w-0">
+              <p className={labelCls}>Resultado do mês</p>
+              <p className={`mt-2 text-3xl sm:text-4xl font-bold tracking-tight leading-none break-words ${positive ? 'text-gray-950 dark:text-white' : 'text-red-600 dark:text-red-400'}`}>
+                {positive ? '' : '-'}R$ {fmt(Math.abs(d.lucroLiquido))}
+              </p>
             </div>
+            <span className={`w-fit rounded-full px-2.5 py-1 text-xs font-medium ${positive ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400' : 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400'}`}>
+              {positive ? 'Positivo' : 'Negativo'}
+            </span>
+          </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 md:pt-5 border-t border-white/10">
-              <div>
-                <p className="text-[10px] text-white/35 mb-1 md:mb-1.5 uppercase tracking-widest">Receita</p>
-                <p className="text-sm md:text-lg font-bold text-white">R$ {fmt(d.totalReceita)}</p>
-                <p className="text-[10px] text-white/30 mt-0.5 hidden sm:block">Bruta</p>
+          <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 border-t border-cream-200 dark:border-zinc-800">
+            {essentials.map((item, index) => (
+              <div key={item.label} className={`pt-4 sm:pr-4 border-cream-200 dark:border-zinc-800 ${index > 0 ? 'sm:border-l sm:pl-4' : ''}`}>
+                <p className={labelCls}>{item.label}</p>
+                <p className="mt-1 text-base font-semibold text-gray-900 dark:text-white break-words">{item.value}</p>
               </div>
-              <div>
-                <p className="text-[10px] text-white/35 mb-1 md:mb-1.5 uppercase tracking-widest">Despesas</p>
-                <p className="text-sm md:text-lg font-bold text-white/70">R$ {fmt(d.totalDespesa)}</p>
-                <p className="text-[10px] text-white/30 mt-0.5 hidden sm:block">Total</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-white/35 mb-1 md:mb-1.5 uppercase tracking-widest">Margem</p>
-                <p className="text-sm md:text-lg font-bold text-white/90">
-                  {d.receitaLiquida > 0 ? `${margem.toFixed(0)}%` : '—'}
-                </p>
-                <p className="text-[10px] text-white/30 mt-0.5 hidden sm:block">Líquida</p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* Quick Entry */}
         <QuickEntry />
-      </div>
+      </section>
 
-      {/* ── Supporting KPI Cards ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
-        {[
-          {
-            icon: '🍅',
-            label: 'CMV',
-            value: `${d.cmvPct.toFixed(1)}%`,
-            sub: 'Custo de mercadoria',
-            dot: d.cmvPct <= 30 ? 'bg-emerald-400' : d.cmvPct <= 40 ? 'bg-amber-400' : 'bg-red-500',
-          },
-          {
-            icon: '💵',
-            label: 'Receita Líquida',
-            value: `R$ ${fmt(d.receitaLiquida)}`,
-            sub: 'Após taxas de cartão',
-            dot: 'bg-emerald-400',
-          },
-          {
-            icon: '🏦',
-            label: 'Saldo no Caixa',
-            value: `R$ ${fmt(d.saldoAtual)}`,
-            sub: 'Último fechamento',
-            dot: d.saldoAtual >= 0 ? 'bg-emerald-400' : 'bg-red-500',
-          },
-          {
-            icon: '🍕',
-            label: 'Pizzas vendidas',
-            value: String(d.totalPizzas),
-            sub: d.totalPizzas > 0 ? `Ticket R$ ${fmt(ticketMedio)}` : 'Sem vendas',
-            dot: 'bg-amber-400',
-          },
-        ].map(c => (
-          <div key={c.label} className={`${cardCls} p-4 min-w-0`}>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xl">{c.icon}</span>
-              <span className={`w-2 h-2 rounded-full ${c.dot}`} />
-            </div>
-            <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white leading-tight break-words">{c.value}</p>
-            <p className="text-xs font-display italic text-gray-400 dark:text-zinc-500 mt-1">{c.label}</p>
-            <p className="text-[11px] text-gray-300 dark:text-zinc-700 mt-0.5">{c.sub}</p>
+      <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+        {indicators.map((item) => (
+          <div key={item.label} className={`${cardCls} p-4 min-w-0`}>
+            <p className={labelCls}>{item.label}</p>
+            <p className={`mt-1 text-lg font-semibold break-words ${item.tone}`}>{item.value}</p>
+            <p className="mt-0.5 text-xs text-gray-400 dark:text-zinc-600">{item.hint}</p>
           </div>
         ))}
-      </div>
+      </section>
 
-      {/* ── Performance Indicators ── */}
-      <div className={`${cardCls} p-5`}>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-400 dark:text-zinc-600 mb-5">
-          Indicadores de Desempenho
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          <div className="sm:pr-5 sm:border-r border-cream-200 dark:border-zinc-800/50">
-            <div className="flex flex-col min-[420px]:flex-row min-[420px]:justify-between min-[420px]:items-baseline gap-1 mb-2">
-              <span className="text-sm text-gray-600 dark:text-gray-400">Custo de Mercadoria</span>
-              <span className={`text-sm font-bold ${d.cmvPct <= 30 ? 'text-emerald-600 dark:text-emerald-400' : d.cmvPct <= 40 ? 'text-amber-500' : 'text-red-600'}`}>
-                {d.cmvPct.toFixed(1)}%
-              </span>
-            </div>
-            <div className="h-1.5 bg-cream-200 dark:bg-zinc-800 rounded-full overflow-hidden mb-2">
-              <div
-                className={`h-full rounded-full transition-all ${d.cmvPct <= 30 ? 'bg-emerald-500' : d.cmvPct <= 40 ? 'bg-amber-400' : 'bg-red-500'}`}
-                style={{ width: `${Math.min(d.cmvPct, 100)}%` }}
-              />
-            </div>
-            <p className="text-[11px] text-gray-400 dark:text-zinc-600">
-              {d.cmvPct <= 30 ? '✦ Excelente — meta ≤ 30%' : d.cmvPct <= 40 ? '⚡ Atenção — 30–40%' : '⚠ Crítico — acima de 40%'}
-            </p>
-          </div>
-
-          <div className="sm:px-5 sm:border-r border-cream-200 dark:border-zinc-800/50">
-            <div className="flex flex-col min-[420px]:flex-row min-[420px]:justify-between min-[420px]:items-baseline gap-1 mb-2">
-              <span className="text-sm text-gray-600 dark:text-gray-400">Margem de Lucro</span>
-              <span className={`text-sm font-bold ${d.lucroLiquido >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600'}`}>
-                {d.receitaLiquida > 0 ? `${margem.toFixed(1)}%` : '—'}
-              </span>
-            </div>
-            <div className="h-1.5 bg-cream-200 dark:bg-zinc-800 rounded-full overflow-hidden mb-2">
-              <div
-                className={`h-full rounded-full ${d.lucroLiquido >= 0 ? 'bg-emerald-500' : 'bg-red-500'}`}
-                style={{ width: `${Math.min(Math.max(margem, 0), 100)}%` }}
-              />
-            </div>
-            <p className="text-[11px] text-gray-400 dark:text-zinc-600">
-              Lucro R$ {fmt(d.lucroLiquido)} / Receita R$ {fmt(d.receitaLiquida)}
-            </p>
-          </div>
-
-          <div className="sm:pl-5">
-            <div className="flex flex-col min-[420px]:flex-row min-[420px]:justify-between min-[420px]:items-baseline gap-1 mb-2">
-              <span className="text-sm text-gray-600 dark:text-gray-400">Peso das Despesas</span>
-              <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
-                {d.totalReceita > 0 ? `${((d.totalDespesa / d.totalReceita) * 100).toFixed(1)}%` : '—'}
-              </span>
-            </div>
-            <div className="h-1.5 bg-cream-200 dark:bg-zinc-800 rounded-full overflow-hidden mb-2">
-              <div
-                className="h-full rounded-full bg-primary/60"
-                style={{ width: `${Math.min(d.totalReceita > 0 ? (d.totalDespesa / d.totalReceita) * 100 : 0, 100)}%` }}
-              />
-            </div>
-            <p className="text-[11px] text-gray-400 dark:text-zinc-600">
-              R$ {fmt(d.totalDespesa)} de R$ {fmt(d.totalReceita)}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Chart + Contas Pendentes ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
-
+      <section className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         <div className={`lg:col-span-3 ${cardCls} p-5`}>
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-4">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-400 dark:text-zinc-600 mb-0.5">
-                Evolução
-              </p>
-              <h3 className="font-display italic text-lg text-gray-800 dark:text-gray-200">
-                Últimos 6 meses
-              </h3>
+              <p className={labelCls}>Evolução</p>
+              <h2 className="text-base font-semibold text-gray-900 dark:text-white">Últimos 6 meses</h2>
             </div>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-gray-400 dark:text-zinc-600 pt-1">
-              <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block" />Receita
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-sm bg-primary inline-block" />Despesa
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-4 h-[2px] bg-amber-500 inline-block rounded-full" />Lucro
-              </span>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-gray-400 dark:text-zinc-600">
+              <span>Receita</span>
+              <span>Despesa</span>
+              <span>Lucro</span>
             </div>
           </div>
           <GraficoFechamento dados={d.dadosMensais} />
         </div>
 
         <div className={`lg:col-span-2 ${cardCls} flex flex-col`}>
-          <div className="px-5 py-4 border-b border-cream-200 dark:border-zinc-800/50 flex items-center justify-between">
+          <div className="px-5 py-4 border-b border-cream-200 dark:border-zinc-800/60 flex items-center justify-between">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-400 dark:text-zinc-600 mb-0.5">
-                A Pagar
-              </p>
-              <h3 className="font-display italic text-gray-800 dark:text-gray-200">Pendências</h3>
+              <p className={labelCls}>A pagar</p>
+              <h2 className="text-base font-semibold text-gray-900 dark:text-white">Pendências</h2>
             </div>
             {d.contasPendentes.length > 0 && (
-              <span className="w-6 h-6 rounded-full bg-primary/10 dark:bg-primary/20 text-primary text-xs font-bold flex items-center justify-center">
+              <span className="rounded-full bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
                 {d.contasPendentes.length}
               </span>
             )}
           </div>
 
-          <div className="flex-1 overflow-y-auto max-h-[260px]">
+          <div className="flex-1 overflow-y-auto max-h-[280px]">
             {d.contasPendentes.length === 0 ? (
-              <p className="px-5 py-10 text-center text-sm font-display italic text-gray-400 dark:text-zinc-600">
-                Tudo em dia ✓
+              <p className="px-5 py-10 text-center text-sm text-gray-400 dark:text-zinc-600">
+                Tudo em dia
               </p>
             ) : (
-              <div className="divide-y divide-cream-100 dark:divide-zinc-800/40">
+              <div className="divide-y divide-cream-100 dark:divide-zinc-800/50">
                 {d.contasPendentes.map(c => {
                   const diaVenc = c.diaVencimento
                   const daysLeft = diaVenc ? diaVenc - hoje.getDate() : null
                   const vencida = daysLeft !== null && daysLeft < 0
                   const urgente = daysLeft !== null && daysLeft >= 0 && daysLeft <= 3
                   return (
-                    <div key={c.id} className="px-4 py-3 flex items-center gap-3 hover:bg-cream-50 dark:hover:bg-zinc-800/30 transition-colors">
-                      <div className={`w-1 h-10 rounded-full shrink-0 ${
-                        vencida ? 'bg-red-500' : urgente ? 'bg-amber-400' : 'bg-cream-300 dark:bg-zinc-700'
-                      }`} />
-                      <div className="flex-1 min-w-0">
+                    <div key={c.id} className="px-5 py-3 flex items-center justify-between gap-3">
+                      <div className="min-w-0">
                         <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{c.despesa}</p>
-                        <p className={`text-[11px] mt-0.5 ${vencida ? 'text-red-500' : urgente ? 'text-amber-500' : 'text-gray-400 dark:text-zinc-600'}`}>
+                        <p className={`text-xs mt-0.5 ${vencida ? 'text-red-500' : urgente ? 'text-amber-600 dark:text-amber-400' : 'text-gray-400 dark:text-zinc-600'}`}>
                           {diaVenc
                             ? vencida
                               ? `Venceu dia ${diaVenc}`
@@ -399,7 +274,7 @@ export default async function DashboardPage() {
                             : format(new Date(c.date), 'dd/MM/yyyy', { locale: ptBR })}
                         </p>
                       </div>
-                      <span className="text-sm font-bold text-primary shrink-0">
+                      <span className="text-sm font-semibold text-gray-900 dark:text-white shrink-0">
                         R$ {fmt(c.valor)}
                       </span>
                     </div>
@@ -408,91 +283,77 @@ export default async function DashboardPage() {
               </div>
             )}
           </div>
-
-          {d.contasPendentes.length > 0 && (
-            <div className="px-5 py-3 border-t border-cream-200 dark:border-zinc-800/50 bg-cream-50/60 dark:bg-zinc-800/20 rounded-b-2xl">
-              <div className="flex justify-between items-center">
-                <span className="text-xs font-display italic text-gray-500 dark:text-zinc-500">Total em aberto</span>
-                <span className="text-sm font-bold text-primary">
-                  R$ {fmt(d.contasPendentes.reduce((a, c) => round2(a + c.valor), 0))}
-                </span>
-              </div>
-            </div>
-          )}
         </div>
-      </div>
+      </section>
 
-      {/* ── Breakdown Cards ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
-        {[
-          { icon: '👷', label: 'Funcionários',  value: `R$ ${fmt(d.totalFunc)}`,    bg: 'bg-violet-50 dark:bg-violet-900/10',  color: 'text-violet-700 dark:text-violet-400' },
-          { icon: '🏢', label: 'Contas Fixas',  value: `R$ ${fmt(d.totalFixas)}`,   bg: 'bg-amber-50 dark:bg-amber-900/10',    color: 'text-amber-700 dark:text-amber-400' },
-          { icon: '🛒', label: 'Insumos',       value: `R$ ${fmt(d.totalInsumos)}`, bg: 'bg-sky-50 dark:bg-sky-900/10',        color: 'text-sky-700 dark:text-sky-400' },
-          { icon: '💳', label: 'Taxas Cartão',  value: `R$ ${fmt(d.totalTaxas)}`,   bg: 'bg-orange-50 dark:bg-orange-900/10',  color: 'text-orange-700 dark:text-orange-400' },
-        ].map(c => (
-          <div key={c.label} className={`${cardCls} p-4 flex items-center gap-3 min-w-0`}>
-            <div className={`w-10 h-10 rounded-xl ${c.bg} flex items-center justify-center text-lg shrink-0`}>
-              {c.icon}
-            </div>
-            <div className="min-w-0">
-              <p className="text-[10px] text-gray-400 dark:text-zinc-600 uppercase tracking-widest font-medium truncate">
-                {c.label}
-              </p>
-              <p className={`text-sm font-bold mt-0.5 break-words ${c.color}`}>{c.value}</p>
+      <details className={`${cardCls} group`}>
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 [&::-webkit-details-marker]:hidden">
+          <div>
+            <p className={labelCls}>Completo, sem poluir a tela</p>
+            <h2 className="text-base font-semibold text-gray-900 dark:text-white">Detalhes do mês</h2>
+          </div>
+          <span className="text-sm text-gray-400 transition-transform group-open:rotate-180">v</span>
+        </summary>
+
+        <div className="border-t border-cream-200 dark:border-zinc-800/60 p-5 space-y-6">
+          <div>
+            <p className={`${labelCls} mb-3`}>Custos</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {breakdown.map((item) => (
+                <div key={item.label} className="rounded-lg border border-cream-200 dark:border-zinc-800 p-3">
+                  <p className="text-xs text-gray-500 dark:text-zinc-500">{item.label}</p>
+                  <p className="mt-1 text-sm font-semibold text-gray-900 dark:text-white break-words">{item.value}</p>
+                </div>
+              ))}
             </div>
           </div>
-        ))}
-      </div>
 
-      {/* ── Activity Timeline ── */}
-      <div className={`${cardCls}`}>
-        <div className="px-5 py-4 border-b border-cream-200 dark:border-zinc-800/50">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-400 dark:text-zinc-600 mb-0.5">
-            Histórico
-          </p>
-          <h3 className="font-display italic text-gray-800 dark:text-gray-200">Atividade Recente</h3>
-        </div>
+          <div>
+            <p className={`${labelCls} mb-3`}>Indicadores</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[
+                { label: 'CMV', value: d.cmvPct, display: `${d.cmvPct.toFixed(1)}%` },
+                { label: 'Margem', value: Math.max(margem, 0), display: d.receitaLiquida > 0 ? `${margem.toFixed(1)}%` : '0%' },
+                { label: 'Despesas / receita', value: despesasPct, display: `${despesasPct.toFixed(1)}%` },
+              ].map((item) => (
+                <div key={item.label}>
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{item.label}</span>
+                    <span className="text-sm font-semibold text-gray-900 dark:text-white">{item.display}</span>
+                  </div>
+                  <div className="h-1.5 overflow-hidden rounded-full bg-cream-200 dark:bg-zinc-800">
+                    <div className="h-full rounded-full bg-primary/70" style={{ width: `${Math.min(item.value, 100)}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
 
-        <div className="px-5 py-5">
-          {d.activity.length === 0 ? (
-            <p className="text-center text-sm font-display italic text-gray-400 dark:text-zinc-600 py-4">
-              Nenhum registro ainda.
-            </p>
-          ) : (
-            <div className="relative">
-              <div className="absolute left-[6px] top-2 bottom-2 w-px bg-gradient-to-b from-primary/40 via-cream-300 dark:via-zinc-800 to-transparent" />
-              <div className="space-y-0">
+          <div>
+            <p className={`${labelCls} mb-3`}>Atividade recente</p>
+            {d.activity.length === 0 ? (
+              <p className="text-sm text-gray-400 dark:text-zinc-600">Nenhum registro ainda.</p>
+            ) : (
+              <div className="divide-y divide-cream-100 dark:divide-zinc-800/60">
                 {d.activity.map(a => (
-                  <div key={a.key} className="flex gap-4 items-start group">
-                    <div className={`mt-[15px] w-3 h-3 rounded-full border-2 border-white dark:border-zinc-900 shrink-0 z-10 ${dotColor[a.type] ?? 'bg-zinc-400'}`} />
-                    <div className="flex-1 flex flex-col sm:flex-row sm:items-center sm:justify-between py-3 border-b border-cream-100 dark:border-zinc-800/40 group-last:border-0 min-w-0 gap-2 sm:gap-3">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <span className={`text-[10px] font-bold uppercase tracking-wider ${typeColor[a.type] ?? 'text-gray-400'}`}>
-                            {a.type}
-                          </span>
-                          <span className="text-gray-200 dark:text-zinc-800 select-none">·</span>
-                          <span className="text-[11px] text-gray-400 dark:text-zinc-600">
-                            {format(a.date, "dd 'de' MMM", { locale: ptBR })}
-                          </span>
-                        </div>
-                        <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{a.label}</p>
-                        {a.sub && (
-                          <p className="text-[11px] text-gray-400 dark:text-zinc-600 mt-0.5">{a.sub}</p>
-                        )}
-                      </div>
-                      <span className={`text-sm font-bold shrink-0 ${a.isRevenue ? 'text-emerald-600 dark:text-emerald-400' : 'text-primary'}`}>
-                        {a.isRevenue ? '+' : '−'} R$ {fmt(a.valor)}
-                      </span>
+                  <div key={a.key} className="py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{a.label}</p>
+                      <p className="text-xs text-gray-400 dark:text-zinc-600">
+                        {a.type} - {format(a.date, "dd 'de' MMM", { locale: ptBR })}
+                        {a.sub ? ` - ${a.sub}` : ''}
+                      </p>
                     </div>
+                    <span className={`text-sm font-semibold shrink-0 ${a.isRevenue ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-900 dark:text-white'}`}>
+                      {a.isRevenue ? '+' : '-'} R$ {fmt(a.valor)}
+                    </span>
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
-
+      </details>
     </div>
   )
 }
