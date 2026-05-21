@@ -32,7 +32,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
   )
 
   return (
-    <aside className="w-[min(18rem,88vw)] md:w-56 h-full min-h-screen min-h-dvh bg-wood-50 dark:bg-[#0a0a0a] border-r border-wood-200 dark:border-zinc-800/60 flex flex-col overflow-y-auto">
+    <aside className="w-[min(18rem,88vw)] md:w-56 h-full min-h-screen min-h-dvh bg-wood-50 wood-surface dark:bg-[#0a0a0a] border-r border-wood-200 dark:border-zinc-800/60 flex flex-col overflow-y-auto">
       <div className="px-5 py-5 border-b border-wood-200 dark:border-zinc-800/60 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Image

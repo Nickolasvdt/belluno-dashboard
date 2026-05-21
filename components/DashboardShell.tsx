@@ -16,7 +16,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
   }, [pathname])
 
   return (
-    <div className="flex min-h-screen min-h-dvh bg-wood-100 dark:bg-zinc-950">
+    <div className="flex min-h-screen min-h-dvh wood-grain dark:bg-zinc-950">
 
       {/* Mobile backdrop */}
       <div
@@ -39,7 +39,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
         {/* Mobile top bar */}
-        <header className="md:hidden sticky top-0 z-30 flex items-center justify-between gap-3 px-4 py-3 bg-wood-50 dark:bg-[#0a0a0a] border-b border-wood-200 dark:border-zinc-800/60 shadow-sm">
+        <header className="md:hidden sticky top-0 z-30 flex items-center justify-between gap-3 px-4 py-3 bg-wood-50 wood-surface dark:bg-[#0a0a0a] border-b border-wood-200 dark:border-zinc-800/60 shadow-sm">
           <div className="flex items-center gap-3 min-w-0">
             <button
               onClick={() => setOpen(true)}
