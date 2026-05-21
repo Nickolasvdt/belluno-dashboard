@@ -37,7 +37,7 @@ export default function LoginPage() {
       <div className="bg-white shadow-md rounded-2xl p-8 w-full max-w-sm">
         <div className="text-center mb-6">
           <div className="flex justify-center mb-3">
-            <Image src="/belluno_logo.png" alt="Belluno" width={80} height={80} className="rounded-full" />
+            <Image src="/belluno_logo.png" alt="Belluno" width={80} height={80} className="rounded-full" unoptimized />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Belluno</h1>
           <p className="text-gray-500 text-sm">Faça login para continuar</p>

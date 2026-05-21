@@ -47,6 +47,8 @@ model Venda {
   credito    Float    @default(0)
   pix        Float    @default(0)
   ifood      Float    @default(0)
+  outros     Float    @default(0)
+  taxas      Float    @default(0)
   pizzas     Int      @default(0)
   observacao String?
   createdAt  DateTime @default(now())

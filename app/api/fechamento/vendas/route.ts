@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
   if (!session) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
   try {
     const body = await request.json()
-    const { date, avista, debito, credito, pix, ifood, pizzas, observacao } = body
+    const { date, avista, debito, credito, pix, ifood, outros, taxas, pizzas, observacao } = body
 
     const venda = await prisma.venda.create({
       data: {
@@ -44,6 +44,8 @@ export async function POST(request: NextRequest) {
         credito: round2(parseFloat(credito) || 0),
         pix: round2(parseFloat(pix) || 0),
         ifood: round2(parseFloat(ifood) || 0),
+        outros: round2(parseFloat(outros) || 0),
+        taxas: round2(parseFloat(taxas) || 0),
         pizzas: parseInt(pizzas) || 0,
         observacao: observacao || null,
       },

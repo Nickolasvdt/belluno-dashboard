@@ -16,6 +16,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   { href: '/',           label: 'Dashboard',         icon: '📊', roles: ['ADMIN'] },
   { href: '/fechamento', label: 'Fechamento',         icon: '📋', roles: ['ADMIN'] },
+  { href: '/gastos',     label: 'Gastos Rápidos',    icon: '⚡', roles: ['ADMIN'] },
   { href: '/caixa',      label: 'Controle de Caixa', icon: '💰', roles: ['ADMIN', 'CAIXA'] },
   { href: '/usuarios',   label: 'Usuários',           icon: '👥', roles: ['ADMIN'] },
   { href: '/conta',      label: 'Minha Conta',        icon: '👤', roles: ['ADMIN', 'CAIXA'] },
@@ -34,7 +35,7 @@ export default function Sidebar() {
   return (
     <aside className="w-64 min-h-screen bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-800 flex flex-col shrink-0">
       <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
-        <Image src="/belluno_logo.png" alt="Belluno" width={40} height={40} className="rounded-full" />
+        <Image src="/belluno_logo.png" alt="Belluno" width={40} height={40} className="rounded-full" unoptimized />
         <span className="text-xl font-bold text-primary">Belluno</span>
       </div>
 
