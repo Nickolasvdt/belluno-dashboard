@@ -13,7 +13,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   try {
     const id = parseInt(params.id)
     const body = await request.json()
-    const { date, despesa, valor, pago } = body
+    const { date, despesa, valor, pago, diaVencimento } = body
 
     const conta = await prisma.contaFixa.update({
       where: { id },
@@ -22,6 +22,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         despesa,
         valor: round2(parseFloat(valor) || 0),
         pago: Boolean(pago),
+        diaVencimento: diaVencimento ? parseInt(diaVencimento) : null,
       },
     })
 

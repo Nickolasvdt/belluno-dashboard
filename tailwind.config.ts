@@ -10,10 +10,39 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        display: ['var(--font-playfair)', 'Georgia', 'serif'],
+      },
       colors: {
         primary: "#8B2020",
         "primary-dark": "#6B1515",
+        "primary-light": "#fdf0f0",
         secondary: "#fbbf24",
+        cream: {
+          50:  '#fefdf8',
+          100: '#fdf9ef',
+          200: '#f0e8d5',
+          300: '#e2d4b2',
+          400: '#c9b88a',
+        },
+        gold: {
+          400: '#f59e0b',
+          500: '#d97706',
+        },
+        // Override gray with zinc values (no blue tint)
+        gray: {
+          50:  '#f9fafb',
+          100: '#f3f4f6',
+          200: '#e5e7eb',
+          300: '#d1d5db',
+          400: '#9ca3af',
+          500: '#6b7280',
+          600: '#52525b',
+          700: '#3f3f46',
+          800: '#27272a',
+          900: '#18181b',
+          950: '#09090b',
+        },
       },
     },
   },

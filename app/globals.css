@@ -10,3 +10,13 @@ input[type="number"]::-webkit-outer-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+
+@layer base {
+  /* Warm parchment page background for all non-auth pages */
+  .bg-page {
+    background-color: #faf9f5;
+  }
+  .dark .bg-page {
+    background-color: #09090b;
+  }
+}

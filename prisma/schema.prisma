@@ -70,13 +70,14 @@ model Funcionario {
 }
 
 model ContaFixa {
-  id        Int      @id @default(autoincrement())
-  date      DateTime
-  despesa   String
-  valor     Float
-  pago      Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             Int      @id @default(autoincrement())
+  date           DateTime
+  despesa        String
+  valor          Float
+  pago           Boolean  @default(false)
+  diaVencimento  Int?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   @@index([date])
 }

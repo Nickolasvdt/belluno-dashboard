@@ -162,9 +162,9 @@ export default function GastosPage() {
   }
 
   const tipoCls: Record<Tipo, string> = {
-    insumo: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400',
-    funcionario: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400',
-    conta: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400',
+    insumo: 'bg-blue-100 dark:bg-zinc-800 text-blue-700 dark:text-sky-400',
+    funcionario: 'bg-purple-100 dark:bg-zinc-800 text-purple-700 dark:text-violet-400',
+    conta: 'bg-orange-100 dark:bg-zinc-800 text-orange-700 dark:text-amber-400',
   }
   const tipoLabel: Record<Tipo, string> = {
     insumo: 'Insumo',
@@ -180,20 +180,20 @@ export default function GastosPage() {
     { key: 'custom', label: 'Mês/Ano' },
   ]
 
-  const inputCls = 'px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-primary focus:border-primary'
+  const inputCls = 'px-3 py-2 border border-gray-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-primary focus:border-primary'
   const labelCls = 'block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1'
 
   return (
-    <div className="max-w-3xl">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Gastos Rápidos</h2>
+    <div className="min-w-0">
+      <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Gastos Rápidos</h2>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Registre compras, pagamentos e contas. Os dados aparecem automaticamente no Fechamento.</p>
 
       {/* Formulário rápido */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-5 mb-6 shadow-sm">
+      <div className="bg-white dark:bg-zinc-900 rounded-xl border border-gray-100 dark:border-zinc-800 p-4 sm:p-5 mb-6 shadow-sm">
         <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Novo Lançamento</h3>
         <form onSubmit={handleSubmit}>
           {/* Tipo selector */}
-          <div className="flex gap-2 mb-4">
+          <div className="flex flex-wrap gap-2 mb-4">
             {(['insumo', 'funcionario', 'conta'] as Tipo[]).map(t => (
               <button
                 key={t}
@@ -202,7 +202,7 @@ export default function GastosPage() {
                 className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
                   tipo === t
                     ? 'bg-primary text-white border-primary'
-                    : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-primary hover:text-primary'
+                    : 'border-gray-300 dark:border-zinc-700 text-gray-600 dark:text-gray-400 hover:border-primary hover:text-primary'
                 }`}
               >
                 {tipoLabel[t]}
@@ -210,12 +210,15 @@ export default function GastosPage() {
             ))}
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 items-end">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 items-end">
             <div>
               <label className={labelCls}>Data</label>
               <input type="date" value={date} onChange={e => setDate(e.target.value)} className={`w-full ${inputCls}`} />
             </div>
-            <div className={tipo === 'funcionario' ? '' : 'md:col-span-2'}>
+            <div>
+              <CurrencyInput label="Valor" value={valor} onChange={v => setValor(v)} required />
+            </div>
+            <div className={tipo === 'funcionario' ? 'sm:col-span-2 md:col-span-1' : 'sm:col-span-2 md:col-span-2'}>
               <label className={labelCls}>
                 {tipo === 'insumo' ? 'Fornecedor / Descrição' : tipo === 'funcionario' ? 'Nome' : 'Despesa'}
               </label>
@@ -229,26 +232,23 @@ export default function GastosPage() {
               />
             </div>
             {tipo === 'funcionario' && (
-              <div>
+              <div className="sm:col-span-2 md:col-span-1">
                 <label className={labelCls}>Semana/Ref.</label>
                 <input type="text" value={semana} onChange={e => setSemana(e.target.value)} placeholder="Semana 1" className={`w-full ${inputCls}`} />
               </div>
             )}
             {tipo === 'conta' && (
-              <div className="flex items-center gap-2 pb-1">
+              <div className="sm:col-span-2 flex items-center gap-2 pt-1">
                 <input type="checkbox" id="pago" checked={pago} onChange={e => setPago(e.target.checked)} className="w-4 h-4 accent-primary" />
-                <label htmlFor="pago" className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">Pago</label>
+                <label htmlFor="pago" className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">Marcar como pago</label>
               </div>
             )}
-            <div>
-              <CurrencyInput label="Valor" value={valor} onChange={v => setValor(v)} required />
-            </div>
           </div>
 
           <button
             type="submit"
             disabled={submitting || !descricao.trim() || valor === 0}
-            className="mt-4 px-6 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark disabled:opacity-50 transition-colors"
+            className="mt-4 w-full sm:w-auto px-6 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-dark disabled:opacity-50 transition-colors"
           >
             {submitting ? 'Salvando...' : '+ Adicionar'}
           </button>
@@ -264,7 +264,7 @@ export default function GastosPage() {
             className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
               filtro === opt.key
                 ? 'bg-primary text-white'
-                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
+                : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
             }`}
           >
             {opt.label}
@@ -272,48 +272,48 @@ export default function GastosPage() {
         ))}
         {filtro === 'custom' && (
           <>
-            <select value={mesFiltro} onChange={e => setMesFiltro(parseInt(e.target.value))} className={`${inputCls} ml-1`}>
+            <select value={mesFiltro} onChange={e => setMesFiltro(parseInt(e.target.value))} className={`${inputCls} w-full sm:w-auto`}>
               {MONTHS.map((m, i) => <option key={i+1} value={i+1}>{m}</option>)}
             </select>
-            <select value={anoFiltro} onChange={e => setAnoFiltro(parseInt(e.target.value))} className={inputCls}>
+            <select value={anoFiltro} onChange={e => setAnoFiltro(parseInt(e.target.value))} className={`${inputCls} w-full sm:w-auto`}>
               {years.map(y => <option key={y} value={y}>{y}</option>)}
             </select>
           </>
         )}
-        {loading && <span className="text-sm text-gray-400 ml-2">Carregando...</span>}
+        {loading && <span className="text-sm text-gray-400 sm:ml-2">Carregando...</span>}
       </div>
 
       {/* Mini resumo */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         {[
           { label: 'Total', value: totalFiltrado, color: 'text-gray-900 dark:text-gray-100' },
-          { label: 'Insumos', value: totalInsumos, color: 'text-blue-600 dark:text-blue-400' },
+          { label: 'Insumos', value: totalInsumos, color: 'text-blue-600 dark:text-sky-400' },
           { label: 'Funcionários', value: totalFuncionarios, color: 'text-purple-600 dark:text-purple-400' },
           { label: 'Contas Fixas', value: totalContas, color: 'text-orange-600 dark:text-orange-400' },
         ].map(c => (
-          <div key={c.label} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-3 shadow-sm">
+          <div key={c.label} className="bg-white dark:bg-zinc-900 rounded-xl border border-gray-100 dark:border-zinc-800 p-3 shadow-sm min-w-0">
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{c.label}</p>
-            <p className={`text-base font-bold ${c.color}`}>R$ {formatBRL(c.value)}</p>
+            <p className={`text-base font-bold break-words ${c.color}`}>R$ {formatBRL(c.value)}</p>
           </div>
         ))}
       </div>
 
       {/* Lista */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-zinc-900 rounded-xl border border-gray-100 dark:border-zinc-800 overflow-hidden shadow-sm">
         {filtered.length === 0 ? (
           <p className="text-center py-10 text-sm text-gray-400 dark:text-gray-500">Nenhum registro no período selecionado.</p>
         ) : (
           <div className="divide-y divide-gray-100 dark:divide-gray-700">
             {filtered.map(e => (
-              <div key={`${e.tipo}-${e.id}`} className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/40">
-                <div className="flex items-center gap-3">
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${tipoCls[e.tipo]}`}>
+              <div key={`${e.tipo}-${e.id}`} className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-4 py-3 gap-3 hover:bg-gray-50 dark:hover:bg-zinc-800/60">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ${tipoCls[e.tipo]}`}>
                     {tipoLabel[e.tipo]}
                   </span>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{e.descricao}</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {format(new Date(e.date), 'dd/MM/yyyy', { locale: ptBR })}
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{e.descricao}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                      {format(new Date(e.date), 'dd/MM/yy', { locale: ptBR })}
                       {e.semana ? ` · ${e.semana}` : ''}
                       {e.tipo === 'conta' && e.pago !== undefined
                         ? ` · ${e.pago ? '✅ Pago' : '⏳ Pendente'}`
@@ -321,11 +321,11 @@ export default function GastosPage() {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <span className="text-sm font-semibold text-red-600 dark:text-red-400">R$ {formatBRL(e.valor)}</span>
+                <div className="flex items-center justify-between gap-2 shrink-0 w-full sm:w-auto">
+                  <span className="text-sm font-semibold text-red-600 dark:text-red-400 whitespace-nowrap">R$ {formatBRL(e.valor)}</span>
                   <button
                     onClick={() => handleDelete(e)}
-                    className="text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors text-lg"
+                    className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-xl"
                     title="Excluir"
                   >
                     ×

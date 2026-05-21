@@ -138,21 +138,21 @@ export default function CaixaPage() {
   }
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Controle de Caixa</h2>
+    <div className="min-w-0">
+      <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4 sm:mb-6">Controle de Caixa</h2>
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-6">
+      <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 p-4 sm:p-6 mb-6">
         <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Novo Registro</h3>
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-            <div>
+            <div className="sm:col-span-2 lg:col-span-3 xl:col-span-1">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data</label>
               <input
                 type="date"
                 required
                 value={formData.date}
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white rounded-md focus:outline-none focus:ring-primary focus:border-primary"
               />
             </div>
             <CurrencyInput
@@ -173,18 +173,18 @@ export default function CaixaPage() {
             />
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fechamento</label>
-              <div className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 text-sm font-semibold text-gray-900 dark:text-gray-100">
+              <div className="w-full px-3 py-2 border border-gray-200 dark:border-zinc-700 rounded-md bg-gray-50 dark:bg-zinc-800 text-sm font-semibold text-gray-900 dark:text-gray-100">
                 R$ {formatBRL(calcularFechamento(formData))}
               </div>
             </div>
-            <div>
+            <div className="sm:col-span-2 lg:col-span-3 xl:col-span-1">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Observacao</label>
               <input
                 type="text"
                 value={formData.observacao}
                 onChange={(e) => setFormData({ ...formData, observacao: e.target.value })}
                 placeholder="Ex: Caixinha..."
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-primary focus:border-primary"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white rounded-md focus:outline-none focus:ring-primary focus:border-primary"
               />
             </div>
           </div>
@@ -192,7 +192,7 @@ export default function CaixaPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark disabled:opacity-50 transition-colors"
+              className="w-full sm:w-auto px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark disabled:opacity-50 transition-colors"
             >
               {submitting ? 'Salvando...' : 'Adicionar Registro'}
             </button>
@@ -200,13 +200,13 @@ export default function CaixaPage() {
         </form>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
+      <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 overflow-hidden">
+        <div className="px-5 py-4 border-b border-gray-100 dark:border-zinc-800">
           <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Historico de Registros</h3>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-700">
+          <table className="min-w-[760px] divide-y divide-gray-100 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-zinc-800">
               <tr>
                 <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Data</th>
                 <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Saldo Inicial</th>
@@ -219,7 +219,7 @@ export default function CaixaPage() {
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {registros.map((r) => (
-                <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-zinc-800/60">
                   <td className="px-5 py-3 text-sm text-gray-900 dark:text-gray-100">
                     {format(new Date(r.date), 'dd/MM/yyyy', { locale: ptBR })}
                   </td>
@@ -229,7 +229,7 @@ export default function CaixaPage() {
                   <td className="px-5 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100">R$ {formatBRL(r.fechamento)}</td>
                   <td className="px-5 py-3 text-sm text-gray-500 dark:text-gray-400">{r.observacao || '-'}</td>
                   <td className="px-5 py-3 text-sm">
-                    <button onClick={() => handleEditStart(r)} className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium mr-3">Editar</button>
+                    <button onClick={() => handleEditStart(r)} className="text-primary hover:text-primary-dark font-medium mr-3">Editar</button>
                     <button onClick={() => handleDelete(r.id)} className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium">Excluir</button>
                   </td>
                 </tr>
@@ -246,7 +246,7 @@ export default function CaixaPage() {
 
       {editingId !== null && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 w-full max-w-lg">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xl p-4 sm:p-6 w-full max-w-lg max-h-[calc(100dvh-2rem)] overflow-y-auto">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-5">Editar Registro</h3>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
@@ -255,7 +255,7 @@ export default function CaixaPage() {
                   type="date"
                   value={editData.date}
                   onChange={(e) => setEditData({ ...editData, date: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-primary focus:border-primary"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                 />
               </div>
               <CurrencyInput label="Saldo Inicial" value={editData.saldoInicial} onChange={(v) => setEditData({ ...editData, saldoInicial: v })} />
@@ -263,7 +263,7 @@ export default function CaixaPage() {
               <CurrencyInput label="Saidas" value={editData.saidas} onChange={(v) => setEditData({ ...editData, saidas: v })} />
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fechamento</label>
-                <div className="w-full px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700 text-sm font-semibold text-gray-900 dark:text-gray-100">
+                <div className="w-full px-3 py-2 border border-gray-200 dark:border-zinc-700 rounded-md bg-gray-50 dark:bg-zinc-800 text-sm font-semibold text-gray-900 dark:text-gray-100">
                   R$ {formatBRL(calcularFechamento(editData))}
                 </div>
               </div>
@@ -273,15 +273,15 @@ export default function CaixaPage() {
                   type="text"
                   value={editData.observacao}
                   onChange={(e) => setEditData({ ...editData, observacao: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-primary focus:border-primary"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                 />
               </div>
             </div>
-            <div className="flex gap-3 mt-6">
+            <div className="flex flex-col sm:flex-row gap-3 mt-6">
               <button onClick={handleEditSave} disabled={submitting} className="flex-1 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark disabled:opacity-50 transition-colors">
                 {submitting ? 'Salvando...' : 'Salvar'}
               </button>
-              <button onClick={() => setEditingId(null)} className="flex-1 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+              <button onClick={() => setEditingId(null)} className="flex-1 py-2 border border-gray-300 dark:border-zinc-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                 Cancelar
               </button>
             </div>

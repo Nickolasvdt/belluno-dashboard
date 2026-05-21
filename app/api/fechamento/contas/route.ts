@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
   if (!session) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
   try {
     const body = await request.json()
-    const { date, despesa, valor, pago } = body
+    const { date, despesa, valor, pago, diaVencimento } = body
 
     const conta = await prisma.contaFixa.create({
       data: {
@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
         despesa,
         valor: round2(parseFloat(valor) || 0),
         pago: Boolean(pago),
+        diaVencimento: diaVencimento ? parseInt(diaVencimento) : null,
       },
     })
 

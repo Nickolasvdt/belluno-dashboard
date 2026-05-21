@@ -21,9 +21,9 @@ export default function CurrencyInput({ value, onChange, label, required, placeh
   }
 
   return (
-    <div>
+    <div className="min-w-0">
       {label && (
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
+        <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 truncate">{label}</label>
       )}
       <input
         type="text"
@@ -32,7 +32,7 @@ export default function CurrencyInput({ value, onChange, label, required, placeh
         onChange={handleChange}
         required={required}
         placeholder={placeholder ?? 'R$ 0,00'}
-        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md focus:outline-none focus:ring-primary focus:border-primary"
+        className="w-full min-w-0 px-3 py-2 border border-gray-300 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white rounded-md text-sm focus:outline-none focus:ring-primary focus:border-primary"
       />
     </div>
   )
