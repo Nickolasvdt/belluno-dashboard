@@ -137,10 +137,10 @@ export default function QuickAddFAB() {
               <div className="grid grid-cols-2 gap-3">
                 <CurrencyInput label="À Vista" value={avista} onChange={setAvista} />
                 <CurrencyInput label="Stone / Débito" value={debito} onChange={setDebito} />
-                <CurrencyInput label="Crédito / VR" value={credito} onChange={setCredito} />
-                <CurrencyInput label="PIX" value={pix} onChange={setPix} />
+                <CurrencyInput label="Ticket / VR / Alelo" value={credito} onChange={setCredito} />
+                <CurrencyInput label="PIX (Tuna)" value={pix} onChange={setPix} />
                 <CurrencyInput label="iFood" value={ifood} onChange={setIfood} />
-                <CurrencyInput label="Outros" value={outros} onChange={setOutros} />
+                <CurrencyInput label="99Food / Keeta" value={outros} onChange={setOutros} />
                 <CurrencyInput label="Taxas" value={taxas} onChange={setTaxas} />
                 <div>
                   <label className="text-xs text-gray-500 dark:text-zinc-400 mb-1 block">Pizzas</label>

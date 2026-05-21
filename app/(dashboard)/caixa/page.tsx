@@ -34,6 +34,7 @@ export default function CaixaPage() {
   const [saldoInicial, setSaldoInicial] = useState(0)
   const [entradas, setEntradas] = useState(0)
   const [saidas, setSaidas] = useState(0)
+  const [diferenca, setDiferenca] = useState('')
   const [observacao, setObservacao] = useState('')
 
   useEffect(() => { carregar() }, [])
@@ -50,7 +51,7 @@ export default function CaixaPage() {
     setEditId(null)
     setDate(today)
     setSaldoInicial(registros[0]?.fechamento ?? 0)
-    setEntradas(0); setSaidas(0); setObservacao('')
+    setEntradas(0); setSaidas(0); setDiferenca(''); setObservacao('')
     setOpen(true)
   }
 
@@ -60,6 +61,7 @@ export default function CaixaPage() {
     setSaldoInicial(r.saldoInicial)
     setEntradas(r.entradas)
     setSaidas(r.saidas)
+    setDiferenca(r.diferenca != null ? String(r.diferenca) : '')
     setObservacao(r.observacao ?? '')
     setOpen(true)
   }
@@ -68,7 +70,7 @@ export default function CaixaPage() {
     e.preventDefault()
     setSubmitting(true)
     try {
-      const body = { date, saldoInicial, entradas, saidas, observacao }
+      const body = { date, saldoInicial, entradas, saidas, diferenca: diferenca !== '' ? diferenca : null, observacao }
       if (editId) {
         await fetch(`/api/caixa/${editId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
       } else {
@@ -126,6 +128,14 @@ export default function CaixaPage() {
               <p className="text-sm font-semibold text-primary">R$ {fmt(hoje.saidas)}</p>
             </div>
           </div>
+          {hoje.diferenca != null && (
+            <div className="mt-3 pt-3 border-t border-cream-200 dark:border-zinc-800 flex items-center justify-between">
+              <p className="text-[11px] text-gray-400 dark:text-zinc-500 uppercase tracking-wide">Diferença</p>
+              <p className={`text-sm font-semibold ${hoje.diferenca >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-primary'}`}>
+                {hoje.diferenca >= 0 ? '+' : ''}R$ {fmt(hoje.diferenca)}
+              </p>
+            </div>
+          )}
           {hoje.observacao && (
             <p className="text-xs text-gray-400 dark:text-zinc-500 mt-3 pt-3 border-t border-cream-200 dark:border-zinc-800">{hoje.observacao}</p>
           )}
@@ -209,6 +219,12 @@ export default function CaixaPage() {
           <div className="p-3 bg-cream-100 dark:bg-zinc-800 rounded-xl">
             <p className="text-xs text-gray-500 dark:text-zinc-400">Fechamento calculado</p>
             <p className="text-xl font-bold text-gray-800 dark:text-gray-100">R$ {fmt(fechamento)}</p>
+          </div>
+          <div>
+            <label className="text-xs text-gray-500 dark:text-zinc-400 mb-1 block">Diferença (opcional)</label>
+            <input type="number" step="0.01" value={diferenca} onChange={e => setDiferenca(e.target.value)}
+              placeholder="0,00 (positivo ou negativo)" className={inp} />
+            <p className="text-[11px] text-gray-400 dark:text-zinc-500 mt-1">Diferença entre o caixa físico e o fechamento calculado</p>
           </div>
           <div>
             <label className="text-xs text-gray-500 dark:text-zinc-400 mb-1 block">Observação (opcional)</label>

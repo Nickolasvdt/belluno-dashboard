@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
   if (!session) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
   try {
     const body = await request.json()
-    const { date, saldoInicial, entradas, saidas, observacao } = body
+    const { date, saldoInicial, entradas, saidas, observacao, diferenca } = body
 
     const si = round2(parseFloat(saldoInicial) || 0)
     const en = round2(parseFloat(entradas) || 0)
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
         entradas: en,
         saidas: sa,
         fechamento,
-        diferenca: null,
+        diferenca: diferenca != null && diferenca !== '' ? round2(parseFloat(diferenca)) : null,
         observacao: observacao || null,
       },
     })
