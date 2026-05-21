@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
-// GET - Listar todos os registros
 export async function GET(request: NextRequest) {
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
   try {
     const { searchParams } = new URL(request.url)
     const month = searchParams.get('month')
@@ -36,8 +39,9 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Criar novo registro
 export async function POST(request: NextRequest) {
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
   try {
     const body = await request.json()
     const { date, saldoInicial, entradas, saidas, observacao } = body

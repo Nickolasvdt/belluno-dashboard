@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
-// PUT - Atualizar registro
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
   try {
     const id = parseInt(params.id)
     const body = await request.json()
@@ -36,11 +39,12 @@ export async function PUT(
   }
 }
 
-// DELETE - Deletar registro
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const session = await getServerSession(authOptions)
+  if (!session) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
   try {
     const id = parseInt(params.id)
     await prisma.cashFlow.delete({
