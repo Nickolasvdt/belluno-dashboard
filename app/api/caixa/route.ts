@@ -3,6 +3,10 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+function round2(n: number) {
+  return Math.round(n * 100) / 100
+}
+
 export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
@@ -12,11 +16,11 @@ export async function GET(request: NextRequest) {
     const year = searchParams.get('year')
 
     let whereClause = {}
-    
+
     if (month && year) {
       const startDate = new Date(parseInt(year), parseInt(month) - 1, 1)
       const endDate = new Date(parseInt(year), parseInt(month), 0, 23, 59, 59)
-      
+
       whereClause = {
         date: {
           gte: startDate,
@@ -46,17 +50,19 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { date, saldoInicial, entradas, saidas, observacao } = body
 
-    const fechamento = saldoInicial + entradas - saidas
-    const diferenca = fechamento - (saldoInicial + entradas - saidas)
+    const si = round2(parseFloat(saldoInicial) || 0)
+    const en = round2(parseFloat(entradas) || 0)
+    const sa = round2(parseFloat(saidas) || 0)
+    const fechamento = round2(si + en - sa)
 
     const registro = await prisma.cashFlow.create({
       data: {
         date: new Date(date),
-        saldoInicial: parseFloat(saldoInicial) || 0,
-        entradas: parseFloat(entradas) || 0,
-        saidas: parseFloat(saidas) || 0,
+        saldoInicial: si,
+        entradas: en,
+        saidas: sa,
         fechamento,
-        diferenca: diferenca !== 0 ? diferenca : null,
+        diferenca: null,
         observacao: observacao || null,
       },
     })

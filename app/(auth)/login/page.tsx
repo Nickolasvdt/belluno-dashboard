@@ -3,6 +3,7 @@
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import Image from 'next/image'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -35,8 +36,10 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="bg-white shadow-md rounded-2xl p-8 w-full max-w-sm">
         <div className="text-center mb-6">
-          <span className="text-4xl">🍕</span>
-          <h1 className="text-2xl font-bold text-gray-900 mt-2">Belluno</h1>
+          <div className="flex justify-center mb-3">
+            <Image src="/belluno_logo.png" alt="Belluno" width={80} height={80} className="rounded-full" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900">Belluno</h1>
           <p className="text-gray-500 text-sm">Faça login para continuar</p>
         </div>
 
@@ -72,7 +75,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2 px-4 bg-primary text-white rounded-lg font-medium hover:bg-red-600 disabled:opacity-50 transition-colors"
+            className="w-full py-2 px-4 bg-primary text-white rounded-lg font-medium hover:bg-primary-dark disabled:opacity-50 transition-colors"
           >
             {loading ? 'Entrando...' : 'Entrar'}
           </button>

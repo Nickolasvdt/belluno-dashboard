@@ -38,3 +38,54 @@ model CashFlow {
 
   @@index([date])
 }
+
+model Venda {
+  id         Int      @id @default(autoincrement())
+  date       DateTime
+  avista     Float    @default(0)
+  debito     Float    @default(0)
+  credito    Float    @default(0)
+  pix        Float    @default(0)
+  ifood      Float    @default(0)
+  pizzas     Int      @default(0)
+  observacao String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([date])
+}
+
+model Funcionario {
+  id        Int      @id @default(autoincrement())
+  date      DateTime
+  nome      String
+  semana    String?
+  valor     Float
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([date])
+}
+
+model ContaFixa {
+  id        Int      @id @default(autoincrement())
+  date      DateTime
+  despesa   String
+  valor     Float
+  pago      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([date])
+}
+
+model Insumo {
+  id         Int      @id @default(autoincrement())
+  date       DateTime
+  fornecedor String
+  valor      Float
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([date])
+}

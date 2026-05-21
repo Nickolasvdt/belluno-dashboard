@@ -10,13 +10,13 @@ async function main() {
   await prisma.user.upsert({
     where: { username: 'nickolasvidoto' },
     update: {},
-    create: { username: 'nickolasvidoto', password: adminHash, role: 'ADMIN' },
+    create: { username: 'nickolasvidoto', password: adminHash, role: 'CAIXA' },
   })
 
   await prisma.user.upsert({
     where: { username: 'alan' },
     update: {},
-    create: { username: 'alan', password: caixaHash, role: 'CAIXA' },
+    create: { username: 'alan', password: caixaHash, role: 'ADMIN' },
   })
 
   console.log('✅ Usuários criados com sucesso')
