@@ -10,13 +10,12 @@ export default function DashboardShell({ children }: { children: React.ReactNode
   const pathname = usePathname()
   const { theme, toggle } = useTheme()
 
-  // Close sidebar when route changes (navigation on mobile)
   useEffect(() => {
     setOpen(false)
   }, [pathname])
 
   return (
-    <div className="flex min-h-screen min-h-dvh wood-grain dark:bg-zinc-950">
+    <div className="flex min-h-screen min-h-dvh bg-[#faf9f6] dark:bg-zinc-950">
 
       {/* Mobile backdrop */}
       <div
@@ -39,12 +38,12 @@ export default function DashboardShell({ children }: { children: React.ReactNode
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
         {/* Mobile top bar */}
-        <header className="md:hidden sticky top-0 z-30 flex items-center justify-between gap-3 px-4 py-3 bg-wood-50 wood-surface dark:bg-[#0a0a0a] border-b border-wood-200 dark:border-zinc-800/60 shadow-sm">
+        <header className="md:hidden sticky top-0 z-30 flex items-center justify-between gap-3 px-4 py-3 bg-white dark:bg-[#0a0a0a] border-b border-cream-200 dark:border-zinc-800/60 shadow-sm">
           <div className="flex items-center gap-3 min-w-0">
             <button
               onClick={() => setOpen(true)}
               aria-label="Abrir menu"
-              className="w-9 h-9 flex items-center justify-center rounded-xl text-wood-600 dark:text-zinc-500 hover:bg-wood-100 dark:hover:bg-zinc-800 transition-colors"
+              className="w-9 h-9 flex items-center justify-center rounded-xl text-gray-500 dark:text-zinc-500 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
             >
               <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
                 <rect width="18" height="2" rx="1" fill="currentColor" />
@@ -56,7 +55,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
           </div>
           <button
             onClick={toggle}
-            className="h-9 rounded-lg border border-wood-300 bg-wood-100 px-3 text-xs font-semibold text-wood-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+            className="h-9 rounded-lg border border-cream-200 bg-white px-3 text-xs font-medium text-gray-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400"
             aria-label={theme === 'dark' ? 'Ativar modo claro' : 'Ativar modo escuro'}
           >
             {theme === 'dark' ? 'Claro' : 'Escuro'}
@@ -64,7 +63,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
         </header>
 
         {/* Page content */}
-        <main className="flex-1 min-w-0 p-3 sm:p-4 md:p-5 overflow-x-hidden overflow-y-auto text-wood-700 dark:text-gray-100">
+        <main className="flex-1 min-w-0 p-3 sm:p-4 md:p-5 lg:p-6 overflow-x-hidden overflow-y-auto text-gray-900 dark:text-gray-100">
           {children}
         </main>
       </div>
