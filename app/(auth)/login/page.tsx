@@ -33,14 +33,14 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="bg-white shadow-md rounded-2xl p-8 w-full max-w-sm">
+    <div className="min-h-screen bg-wood-100 flex items-center justify-center">
+      <div className="bg-wood-50 shadow-md rounded-2xl p-8 w-full max-w-sm">
         <div className="text-center mb-6">
           <div className="flex justify-center mb-3">
             <Image src="/belluno_logo.png" alt="Belluno" width={80} height={80} className="rounded-full" unoptimized />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Belluno</h1>
-          <p className="text-gray-500 text-sm">Faça login para continuar</p>
+          <h1 className="text-2xl font-bold text-wood-700">Belluno</h1>
+          <p className="text-wood-500 text-sm">Faça login para continuar</p>
         </div>
 
         {error && (
@@ -51,25 +51,25 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Usuário</label>
+            <label className="block text-sm font-medium text-wood-600 mb-1">Usuário</label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
               autoComplete="username"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-3 py-2 border border-wood-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Senha</label>
+            <label className="block text-sm font-medium text-wood-600 mb-1">Senha</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               autoComplete="current-password"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              className="w-full px-3 py-2 border border-wood-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
             />
           </div>
           <button

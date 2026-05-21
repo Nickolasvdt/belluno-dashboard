@@ -15,7 +15,7 @@ const catLabels: Record<Cat, string> = {
   caixa: 'Caixa',
 }
 
-const inputCls = 'w-full px-3 py-2 border border-cream-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary'
+const inputCls = 'w-full px-3 py-2 border border-wood-300 dark:border-zinc-700 bg-wood-50 dark:bg-zinc-900 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary'
 
 const FORNECEDORES_COMUNS = ['PMG', 'Sacolão', 'CristauLat', 'Atacado', 'Bom Baiano', 'Lenha', 'Embalagens', 'JMW', 'Mega G']
 const FUNCIONARIOS_COMUNS = ['Priscila', 'Will', 'Soraya', 'Mauricio', 'Leandro', 'Nickolas', 'Moises']
@@ -102,13 +102,13 @@ export default function QuickEntry() {
     : []
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-xl border border-cream-200 dark:border-zinc-800 p-4 h-full min-w-0">
+    <div className="bg-wood-50 dark:bg-zinc-900 rounded-xl border border-wood-200 dark:border-zinc-800 p-4 self-start min-w-0">
       <div className="flex items-center justify-between gap-3 mb-3">
-        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Novo lançamento</h3>
+        <h3 className="text-sm font-semibold text-wood-700 dark:text-white">Novo lançamento</h3>
         {success && <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Salvo</span>}
       </div>
 
-      <div className="grid grid-cols-2 min-[420px]:grid-cols-5 gap-1 mb-4 bg-cream-50 dark:bg-zinc-800 rounded-lg p-1">
+      <div className="grid grid-cols-2 min-[420px]:grid-cols-5 gap-1 mb-4 bg-wood-100 dark:bg-zinc-800 rounded-lg p-1">
         {(['venda', 'insumo', 'funcionario', 'conta', 'caixa'] as Cat[]).map(c => (
           <button
             key={c}
@@ -116,8 +116,8 @@ export default function QuickEntry() {
             onClick={() => { setCat(c); resetForm() }}
             className={`min-w-0 px-2 py-1.5 rounded-md text-[11px] font-medium transition-colors ${
               cat === c
-                ? 'bg-white dark:bg-zinc-700 text-primary shadow-sm'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                ? 'bg-wood-50 dark:bg-zinc-700 text-primary shadow-sm'
+                : 'text-wood-500 dark:text-zinc-400 hover:text-wood-700 dark:hover:text-gray-200'
             }`}
           >
             <span className="block truncate">{catLabels[c]}</span>
@@ -128,7 +128,7 @@ export default function QuickEntry() {
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-3">
           <div>
-            <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Data</label>
+            <label className="block text-xs text-wood-500 dark:text-zinc-400 mb-1">Data</label>
             <input type="date" value={date} onChange={e => setDate(e.target.value)} className={inputCls} />
           </div>
 
@@ -137,7 +137,7 @@ export default function QuickEntry() {
               <CurrencyInput label="Total bruto" value={valor} onChange={setValor} />
               <CurrencyInput label="À vista" value={avista} onChange={setAvista} />
               <div>
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Pizzas</label>
+                <label className="block text-xs text-wood-500 dark:text-zinc-400 mb-1">Pizzas</label>
                 <input
                   type="number" min="0" value={pizzas || ''}
                   onChange={e => setPizzas(parseInt(e.target.value) || 0)}
@@ -145,7 +145,7 @@ export default function QuickEntry() {
                 />
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Observação</label>
+                <label className="block text-xs text-wood-500 dark:text-zinc-400 mb-1">Observação</label>
                 <input type="text" value={descricao} onChange={e => setDescricao(e.target.value)}
                   placeholder="Opcional" className={inputCls} />
               </div>
@@ -156,7 +156,7 @@ export default function QuickEntry() {
             <>
               <CurrencyInput label="Valor" value={valor} onChange={setValor} />
               <div className={cat === 'funcionario' ? '' : 'sm:col-span-2'}>
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
+                <label className="block text-xs text-wood-500 dark:text-zinc-400 mb-1">
                   {cat === 'insumo' ? 'Fornecedor' : cat === 'funcionario' ? 'Nome' : 'Despesa'}
                 </label>
                 <input
@@ -173,7 +173,7 @@ export default function QuickEntry() {
               </div>
               {cat === 'funcionario' && (
                 <div>
-                  <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Semana</label>
+                  <label className="block text-xs text-wood-500 dark:text-zinc-400 mb-1">Semana</label>
                   <input type="text" value={semana} onChange={e => setSemana(e.target.value)}
                     placeholder="Sem. 1" className={inputCls} />
                 </div>
@@ -182,7 +182,7 @@ export default function QuickEntry() {
                 <div className="flex items-center gap-2 sm:col-span-2 mt-1">
                   <input type="checkbox" id="qe-pago" checked={pago}
                     onChange={e => setPago(e.target.checked)} className="w-4 h-4 accent-primary" />
-                  <label htmlFor="qe-pago" className="text-xs text-gray-600 dark:text-gray-400 cursor-pointer">Já foi pago</label>
+                  <label htmlFor="qe-pago" className="text-xs text-wood-600 dark:text-zinc-400 cursor-pointer">Já foi pago</label>
                 </div>
               )}
             </>
@@ -194,13 +194,13 @@ export default function QuickEntry() {
               <CurrencyInput label="Entradas" value={entradas} onChange={setEntradas} />
               <CurrencyInput label="Saídas" value={saidas} onChange={setSaidas} />
               <div>
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Fechamento</label>
-                <div className="w-full px-3 py-2 border border-cream-200 dark:border-zinc-700 rounded-lg bg-cream-50 dark:bg-zinc-800 text-sm font-semibold text-gray-900 dark:text-white">
+                <label className="block text-xs text-wood-500 dark:text-zinc-400 mb-1">Fechamento</label>
+                <div className="w-full px-3 py-2 border border-wood-200 dark:border-zinc-700 rounded-lg bg-wood-100 dark:bg-zinc-800 text-sm font-semibold text-wood-700 dark:text-white">
                   R$ {(Math.round((saldoInicial + entradas - saidas) * 100) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </div>
               </div>
               <div className="sm:col-span-2">
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Observação</label>
+                <label className="block text-xs text-wood-500 dark:text-zinc-400 mb-1">Observação</label>
                 <input type="text" value={descricao} onChange={e => setDescricao(e.target.value)}
                   placeholder="Opcional" className={inputCls} />
               </div>

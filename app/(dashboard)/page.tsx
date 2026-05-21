@@ -40,6 +40,8 @@ async function getDashboardData() {
   const lucroLiquido = round2(receitaLiquida - totalDespesa)
   const cmvPct = totalReceita > 0 ? round2((totalInsumos / totalReceita) * 100) : 0
   const totalPizzas = vendas.reduce((a, v) => a + v.pizzas, 0)
+  const pizzasComReceita = vendas.reduce((a, v) => brutoDia(v) > 0 ? a + v.pizzas : a, 0)
+  const vendaComPizzasSemReceita = vendas.some(v => v.pizzas > 0 && brutoDia(v) === 0)
   const saldoAtual = cashflows[0]?.fechamento ?? 0
 
   const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
@@ -108,9 +110,9 @@ async function getDashboardData() {
   activity.sort((a, b) => b.date.getTime() - a.date.getTime())
 
   return {
-    totalReceita, receitaLiquida, lucroLiquido, cmvPct, totalPizzas,
+    totalReceita, receitaLiquida, lucroLiquido, cmvPct, totalPizzas, pizzasComReceita,
     totalFunc, totalFixas, totalInsumos, totalDespesa, totalTaxas,
-    saldoAtual,
+    saldoAtual, vendaComPizzasSemReceita,
     dadosMensais, activity: activity.slice(0, 8),
     contasPendentes, mesAtual: format(hoje, 'MMMM yyyy', { locale: ptBR }),
   }
@@ -123,11 +125,11 @@ export default async function DashboardPage() {
   const d = await getDashboardData()
   const hoje = new Date()
   const margem = d.receitaLiquida > 0 ? (d.lucroLiquido / d.receitaLiquida) * 100 : 0
-  const ticketMedio = d.totalPizzas > 0 ? round2(d.totalReceita / d.totalPizzas) : 0
+  const ticketMedio = d.pizzasComReceita > 0 ? round2(d.totalReceita / d.pizzasComReceita) : 0
   const despesasPct = d.totalReceita > 0 ? round2((d.totalDespesa / d.totalReceita) * 100) : 0
 
-  const cardCls = 'bg-white dark:bg-zinc-900 rounded-xl border border-cream-200 dark:border-zinc-800/60'
-  const labelCls = 'text-[11px] font-medium uppercase tracking-wide text-gray-400 dark:text-zinc-600'
+  const cardCls = 'bg-wood-50 dark:bg-zinc-900 rounded-xl border border-wood-200 dark:border-zinc-800/60 shadow-sm shadow-wood-700/5'
+  const labelCls = 'text-[11px] font-medium uppercase tracking-wide text-wood-500 dark:text-zinc-600'
   const positive = d.lucroLiquido >= 0
 
   const essentials = [
@@ -147,19 +149,19 @@ export default async function DashboardPage() {
       label: 'Saldo no caixa',
       value: `R$ ${fmt(d.saldoAtual)}`,
       hint: 'Último fechamento',
-      tone: d.saldoAtual >= 0 ? 'text-gray-900 dark:text-white' : 'text-red-600 dark:text-red-400',
+      tone: d.saldoAtual >= 0 ? 'text-wood-700 dark:text-white' : 'text-red-600 dark:text-red-400',
     },
     {
       label: 'Taxas',
       value: `R$ ${fmt(d.totalTaxas)}`,
       hint: 'Cartões e plataformas',
-      tone: 'text-gray-900 dark:text-white',
+      tone: 'text-wood-700 dark:text-white',
     },
     {
       label: 'Ticket médio',
-      value: d.totalPizzas > 0 ? `R$ ${fmt(ticketMedio)}` : 'R$ 0,00',
-      hint: 'Por pizza',
-      tone: 'text-gray-900 dark:text-white',
+      value: d.pizzasComReceita > 0 ? `R$ ${fmt(ticketMedio)}` : 'R$ 0,00',
+      hint: d.vendaComPizzasSemReceita ? 'Dados de venda incompletos' : 'Por pizza vendida',
+      tone: 'text-wood-700 dark:text-white',
     },
   ]
 
@@ -175,19 +177,19 @@ export default async function DashboardPage() {
       <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
         <div>
           <p className={labelCls}>Belluno Pizzaria</p>
-          <h1 className="text-xl sm:text-2xl font-display font-bold text-gray-900 dark:text-white leading-tight">
+          <h1 className="text-xl sm:text-2xl font-display font-bold text-wood-700 dark:text-white leading-tight">
             Visão geral
           </h1>
         </div>
-        <p className="text-sm text-gray-500 dark:text-zinc-500 capitalize">{d.mesAtual}</p>
+        <p className="text-sm text-wood-500 dark:text-zinc-500 capitalize">{d.mesAtual}</p>
       </header>
 
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className={`lg:col-span-2 ${cardCls} p-5`}>
+        <div className={`lg:col-span-2 ${cardCls} p-5 self-start`}>
           <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-start min-[420px]:justify-between gap-3">
             <div className="min-w-0">
               <p className={labelCls}>Resultado do mês</p>
-              <p className={`mt-2 text-3xl sm:text-4xl font-bold tracking-tight leading-none break-words ${positive ? 'text-gray-950 dark:text-white' : 'text-red-600 dark:text-red-400'}`}>
+              <p className={`mt-2 text-3xl sm:text-4xl font-bold tracking-tight leading-none break-words ${positive ? 'text-wood-700 dark:text-white' : 'text-red-600 dark:text-red-400'}`}>
                 {positive ? '' : '-'}R$ {fmt(Math.abs(d.lucroLiquido))}
               </p>
             </div>
@@ -196,11 +198,11 @@ export default async function DashboardPage() {
             </span>
           </div>
 
-          <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 border-t border-cream-200 dark:border-zinc-800">
+          <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 border-t border-wood-200 dark:border-zinc-800">
             {essentials.map((item, index) => (
-              <div key={item.label} className={`pt-4 sm:pr-4 border-cream-200 dark:border-zinc-800 ${index > 0 ? 'sm:border-l sm:pl-4' : ''}`}>
+              <div key={item.label} className={`pt-4 sm:pr-4 border-wood-200 dark:border-zinc-800 ${index > 0 ? 'sm:border-l sm:pl-4' : ''}`}>
                 <p className={labelCls}>{item.label}</p>
-                <p className="mt-1 text-base font-semibold text-gray-900 dark:text-white break-words">{item.value}</p>
+                <p className="mt-1 text-base font-semibold text-wood-700 dark:text-white break-words">{item.value}</p>
               </div>
             ))}
           </div>
@@ -214,7 +216,7 @@ export default async function DashboardPage() {
           <div key={item.label} className={`${cardCls} p-4 min-w-0`}>
             <p className={labelCls}>{item.label}</p>
             <p className={`mt-1 text-lg font-semibold break-words ${item.tone}`}>{item.value}</p>
-            <p className="mt-0.5 text-xs text-gray-400 dark:text-zinc-600">{item.hint}</p>
+            <p className="mt-0.5 text-xs text-wood-500 dark:text-zinc-600">{item.hint}</p>
           </div>
         ))}
       </section>
@@ -224,9 +226,9 @@ export default async function DashboardPage() {
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-4">
             <div>
               <p className={labelCls}>Evolução</p>
-              <h2 className="text-base font-semibold text-gray-900 dark:text-white">Últimos 6 meses</h2>
+              <h2 className="text-base font-semibold text-wood-700 dark:text-white">Últimos 6 meses</h2>
             </div>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-gray-400 dark:text-zinc-600">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-wood-400 dark:text-zinc-600">
               <span>Receita</span>
               <span>Despesa</span>
               <span>Lucro</span>
@@ -236,10 +238,10 @@ export default async function DashboardPage() {
         </div>
 
         <div className={`lg:col-span-2 ${cardCls} flex flex-col`}>
-          <div className="px-5 py-4 border-b border-cream-200 dark:border-zinc-800/60 flex items-center justify-between">
+          <div className="px-5 py-4 border-b border-wood-200 dark:border-zinc-800/60 flex items-center justify-between">
             <div>
               <p className={labelCls}>A pagar</p>
-              <h2 className="text-base font-semibold text-gray-900 dark:text-white">Pendências</h2>
+              <h2 className="text-base font-semibold text-wood-700 dark:text-white">Pendências</h2>
             </div>
             {d.contasPendentes.length > 0 && (
               <span className="rounded-full bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
@@ -250,11 +252,11 @@ export default async function DashboardPage() {
 
           <div className="flex-1 overflow-y-auto max-h-[280px]">
             {d.contasPendentes.length === 0 ? (
-              <p className="px-5 py-10 text-center text-sm text-gray-400 dark:text-zinc-600">
+              <p className="px-5 py-10 text-center text-sm text-wood-400 dark:text-zinc-600">
                 Tudo em dia
               </p>
             ) : (
-              <div className="divide-y divide-cream-100 dark:divide-zinc-800/50">
+              <div className="divide-y divide-wood-200 dark:divide-zinc-800/50">
                 {d.contasPendentes.map(c => {
                   const diaVenc = c.diaVencimento
                   const daysLeft = diaVenc ? diaVenc - hoje.getDate() : null
@@ -263,8 +265,8 @@ export default async function DashboardPage() {
                   return (
                     <div key={c.id} className="px-5 py-3 flex items-center justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{c.despesa}</p>
-                        <p className={`text-xs mt-0.5 ${vencida ? 'text-red-500' : urgente ? 'text-amber-600 dark:text-amber-400' : 'text-gray-400 dark:text-zinc-600'}`}>
+                        <p className="text-sm font-medium text-wood-700 dark:text-white truncate">{c.despesa}</p>
+                        <p className={`text-xs mt-0.5 ${vencida ? 'text-red-500' : urgente ? 'text-amber-600 dark:text-amber-400' : 'text-wood-400 dark:text-zinc-600'}`}>
                           {diaVenc
                             ? vencida
                               ? `Venceu dia ${diaVenc}`
@@ -274,7 +276,7 @@ export default async function DashboardPage() {
                             : format(new Date(c.date), 'dd/MM/yyyy', { locale: ptBR })}
                         </p>
                       </div>
-                      <span className="text-sm font-semibold text-gray-900 dark:text-white shrink-0">
+                      <span className="text-sm font-semibold text-wood-700 dark:text-white shrink-0">
                         R$ {fmt(c.valor)}
                       </span>
                     </div>
@@ -290,19 +292,19 @@ export default async function DashboardPage() {
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 [&::-webkit-details-marker]:hidden">
           <div>
             <p className={labelCls}>Completo, sem poluir a tela</p>
-            <h2 className="text-base font-semibold text-gray-900 dark:text-white">Detalhes do mês</h2>
+            <h2 className="text-base font-semibold text-wood-700 dark:text-white">Detalhes do mês</h2>
           </div>
-          <span className="text-sm text-gray-400 transition-transform group-open:rotate-180">v</span>
+          <span className="text-sm text-wood-400 transition-transform group-open:rotate-180">v</span>
         </summary>
 
-        <div className="border-t border-cream-200 dark:border-zinc-800/60 p-5 space-y-6">
+        <div className="border-t border-wood-200 dark:border-zinc-800/60 p-5 space-y-6">
           <div>
             <p className={`${labelCls} mb-3`}>Custos</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {breakdown.map((item) => (
-                <div key={item.label} className="rounded-lg border border-cream-200 dark:border-zinc-800 p-3">
-                  <p className="text-xs text-gray-500 dark:text-zinc-500">{item.label}</p>
-                  <p className="mt-1 text-sm font-semibold text-gray-900 dark:text-white break-words">{item.value}</p>
+                <div key={item.label} className="rounded-lg border border-wood-200 dark:border-zinc-800 p-3">
+                  <p className="text-xs text-wood-500 dark:text-zinc-500">{item.label}</p>
+                  <p className="mt-1 text-sm font-semibold text-wood-700 dark:text-white break-words">{item.value}</p>
                 </div>
               ))}
             </div>
@@ -318,10 +320,10 @@ export default async function DashboardPage() {
               ].map((item) => (
                 <div key={item.label}>
                   <div className="mb-2 flex items-center justify-between gap-3">
-                    <span className="text-sm text-gray-600 dark:text-gray-400">{item.label}</span>
-                    <span className="text-sm font-semibold text-gray-900 dark:text-white">{item.display}</span>
+                    <span className="text-sm text-wood-600 dark:text-zinc-400">{item.label}</span>
+                    <span className="text-sm font-semibold text-wood-700 dark:text-white">{item.display}</span>
                   </div>
-                  <div className="h-1.5 overflow-hidden rounded-full bg-cream-200 dark:bg-zinc-800">
+                  <div className="h-1.5 overflow-hidden rounded-full bg-wood-200 dark:bg-zinc-800">
                     <div className="h-full rounded-full bg-primary/70" style={{ width: `${Math.min(item.value, 100)}%` }} />
                   </div>
                 </div>
@@ -332,19 +334,19 @@ export default async function DashboardPage() {
           <div>
             <p className={`${labelCls} mb-3`}>Atividade recente</p>
             {d.activity.length === 0 ? (
-              <p className="text-sm text-gray-400 dark:text-zinc-600">Nenhum registro ainda.</p>
+              <p className="text-sm text-wood-400 dark:text-zinc-600">Nenhum registro ainda.</p>
             ) : (
-              <div className="divide-y divide-cream-100 dark:divide-zinc-800/60">
+              <div className="divide-y divide-wood-200 dark:divide-zinc-800/60">
                 {d.activity.map(a => (
                   <div key={a.key} className="py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5">
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{a.label}</p>
-                      <p className="text-xs text-gray-400 dark:text-zinc-600">
+                      <p className="text-sm font-medium text-wood-700 dark:text-white truncate">{a.label}</p>
+                      <p className="text-xs text-wood-400 dark:text-zinc-600">
                         {a.type} - {format(a.date, "dd 'de' MMM", { locale: ptBR })}
                         {a.sub ? ` - ${a.sub}` : ''}
                       </p>
                     </div>
-                    <span className={`text-sm font-semibold shrink-0 ${a.isRevenue ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-900 dark:text-white'}`}>
+                    <span className={`text-sm font-semibold shrink-0 ${a.isRevenue ? 'text-emerald-600 dark:text-emerald-400' : 'text-wood-700 dark:text-white'}`}>
                       {a.isRevenue ? '+' : '-'} R$ {fmt(a.valor)}
                     </span>
                   </div>

@@ -12,10 +12,20 @@ input[type="number"] {
 }
 
 @layer base {
-  /* Warm parchment page background for all non-auth pages */
-  .bg-page {
-    background-color: #faf9f5;
+  body {
+    @apply bg-wood-100 text-wood-700 dark:bg-zinc-950 dark:text-gray-100;
   }
+
+  input,
+  select,
+  textarea {
+    @apply bg-wood-50 text-wood-700 dark:bg-zinc-900 dark:text-gray-100;
+  }
+
+  .bg-page {
+    background-color: #ead6b8;
+  }
+
   .dark .bg-page {
     background-color: #09090b;
   }

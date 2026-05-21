@@ -183,7 +183,10 @@ async function parseVendas2026(wb, sheetName, month, year) {
     const alelo = parseMoney(row[11])   // ALELO
     const vr = parseMoney(row[12])      // VR
     const credito = Math.round((ticket + pluxee + alelo + vr) * 100) / 100
-    const outros = Math.round((f99 + keeta) * 100) / 100
+    const bruto = parseMoney(row[2])
+    const totalIdentificado = Math.round((avista + debito + credito + pix + ifood + f99 + keeta) * 100) / 100
+    const ajusteBruto = bruto > 0 ? Math.max(0, Math.round((bruto - totalIdentificado) * 100) / 100) : 0
+    const outros = Math.round((f99 + keeta + ajusteBruto) * 100) / 100
     const pizzas = parseInt(row[13]) || 0
 
     records.push({ date, avista, debito, credito, pix, ifood, outros, taxas:0, pizzas, observacao: null })
@@ -217,9 +220,11 @@ async function parseVendas2025Late(wb, sheetName, month, year) {
     const pizzas = parseInt(row[8]) || 0
 
     const bruto = parseMoney(row[2])
-    if (bruto === 0 && avista === 0 && debito === 0 && pix === 0 && ifood === 0) continue
+    const totalIdentificado = Math.round((avista + debito + credito + pix + ifood) * 100) / 100
+    const outros = bruto > 0 ? Math.max(0, Math.round((bruto - totalIdentificado) * 100) / 100) : 0
+    if (bruto === 0 && totalIdentificado === 0) continue
 
-    records.push({ date, avista, debito, credito, pix, ifood, outros:0, taxas:0, pizzas, observacao: null })
+    records.push({ date, avista, debito, credito, pix, ifood, outros, taxas:0, pizzas, observacao: null })
   }
   return records
 }

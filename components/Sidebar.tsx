@@ -32,8 +32,8 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
   )
 
   return (
-    <aside className="w-[min(18rem,88vw)] md:w-56 h-full min-h-screen min-h-dvh bg-white dark:bg-[#0a0a0a] border-r border-cream-200 dark:border-zinc-800/60 flex flex-col overflow-y-auto">
-      <div className="px-5 py-5 border-b border-cream-200 dark:border-zinc-800/60 flex items-center justify-between">
+    <aside className="w-[min(18rem,88vw)] md:w-56 h-full min-h-screen min-h-dvh bg-wood-50 dark:bg-[#0a0a0a] border-r border-wood-200 dark:border-zinc-800/60 flex flex-col overflow-y-auto">
+      <div className="px-5 py-5 border-b border-wood-200 dark:border-zinc-800/60 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Image
             src="/belluno_logo.png"
@@ -47,7 +47,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
             <p className="font-display font-bold text-lg text-primary leading-none tracking-tight">
               Belluno
             </p>
-            <p className="text-[10px] text-gray-400 dark:text-zinc-600 font-display italic mt-0.5 tracking-wide">
+            <p className="text-[10px] text-wood-400 dark:text-zinc-600 font-display italic mt-0.5 tracking-wide">
               Pizzaria
             </p>
           </div>
@@ -56,7 +56,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
         {onClose && (
           <button
             onClick={onClose}
-            className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 dark:text-zinc-600 hover:bg-cream-100 dark:hover:bg-zinc-800 transition-colors"
+            className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg text-wood-500 dark:text-zinc-600 hover:bg-wood-100 dark:hover:bg-zinc-800 transition-colors"
             aria-label="Fechar menu"
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -79,7 +79,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
               className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-colors ${
                 isActive
                   ? 'bg-primary/10 text-primary font-semibold'
-                  : 'text-gray-500 dark:text-zinc-500 hover:bg-cream-50 dark:hover:bg-zinc-900 hover:text-gray-900 dark:hover:text-zinc-100 font-medium'
+                  : 'text-wood-600 dark:text-zinc-500 hover:bg-wood-100 dark:hover:bg-zinc-900 hover:text-wood-700 dark:hover:text-zinc-100 font-medium'
               }`}
             >
               <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${isActive ? 'bg-primary' : 'bg-transparent'}`} />
@@ -89,27 +89,27 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
         })}
       </nav>
 
-      <div className="px-4 py-4 border-t border-cream-200 dark:border-zinc-800/60">
+      <div className="px-4 py-4 border-t border-wood-200 dark:border-zinc-800/60">
         <div className="flex items-center justify-between mb-3 gap-3">
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold text-gray-700 dark:text-zinc-300 truncate">
+            <p className="text-xs font-semibold text-wood-700 dark:text-zinc-300 truncate">
               {session?.user?.username}
             </p>
-            <p className="text-[10px] text-gray-400 dark:text-zinc-600 font-display italic mt-0.5 capitalize">
+            <p className="text-[10px] text-wood-400 dark:text-zinc-600 font-display italic mt-0.5 capitalize">
               {role?.toLowerCase()}
             </p>
           </div>
           <button
             onClick={toggle}
             title={theme === 'dark' ? 'Modo claro' : 'Modo escuro'}
-            className="h-8 px-2 rounded-lg flex items-center justify-center text-[11px] font-medium text-gray-400 dark:text-zinc-600 hover:bg-cream-100 dark:hover:bg-zinc-800 hover:text-gray-700 dark:hover:text-zinc-300 transition-colors"
+            className="h-8 px-3 rounded-lg border border-wood-300 bg-wood-100 text-[11px] font-semibold text-wood-700 hover:bg-wood-200 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 transition-colors"
           >
-            {theme === 'dark' ? 'Claro' : 'Escuro'}
+            {theme === 'dark' ? 'Modo claro' : 'Modo escuro'}
           </button>
         </div>
         <button
           onClick={() => signOut({ callbackUrl: '/login' })}
-          className="text-xs text-gray-400 dark:text-zinc-600 hover:text-primary dark:hover:text-primary font-medium transition-colors"
+          className="text-xs text-wood-500 dark:text-zinc-600 hover:text-primary dark:hover:text-primary font-medium transition-colors"
         >
           Sair da conta
         </button>
