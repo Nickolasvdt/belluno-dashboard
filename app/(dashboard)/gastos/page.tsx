@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { format, isWithinInterval, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subWeeks } from 'date-fns'
+import { format, parseISO, isWithinInterval, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subWeeks } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import BottomSheet from '@/components/BottomSheet'
 import CurrencyInput from '@/components/CurrencyInput'
@@ -84,7 +84,7 @@ export default function RegistrosPage() {
   useEffect(() => { fetchAll() }, [fetchAll])
 
   function applyFiltro(e: Entrada) {
-    const d = new Date(e.date)
+    const d = parseISO(e.date.slice(0, 10))
     const today = new Date(); today.setHours(0, 0, 0, 0)
     if (filtro === 'hoje') { const next = new Date(today); next.setDate(next.getDate() + 1); return d >= today && d < next }
     if (filtro === 'semana') return isWithinInterval(d, { start: startOfWeek(today, { locale: ptBR }), end: endOfWeek(today, { locale: ptBR }) })
@@ -173,7 +173,7 @@ export default function RegistrosPage() {
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{e.descricao}</p>
                 <p className="text-xs text-gray-400 dark:text-zinc-500">
-                  {format(new Date(e.date), 'dd/MM', { locale: ptBR })}
+                  {format(parseISO(e.date.slice(0, 10)), 'dd/MM', { locale: ptBR })}
                   {e.semana ? ` · ${e.semana}` : ''}
                   {e.tipo === 'conta' && e.diaVencimento ? ` · vence dia ${e.diaVencimento}` : ''}
                   {e.tipo === 'conta' ? ` · ${e.pago ? 'Pago' : 'Pendente'}` : ''}

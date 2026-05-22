@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { format } from 'date-fns'
+import { format, parseISO } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import BottomSheet from '@/components/BottomSheet'
 import CurrencyInput from '@/components/CurrencyInput'
@@ -89,7 +89,7 @@ export default function CaixaPage() {
 
   const fechamento = r2(saldoInicial + entradas - saidas)
   const hoje = registros[0]
-  const temHoje = hoje && format(new Date(hoje.date), 'yyyy-MM-dd') === today
+  const temHoje = hoje && hoje.date.slice(0, 10) === today
 
   if (loading) return <div className="flex items-center justify-center py-20"><p className="text-sm text-gray-400">Carregando...</p></div>
 
@@ -103,7 +103,7 @@ export default function CaixaPage() {
           <div className="flex items-start justify-between mb-4">
             <div>
               <p className="text-xs text-gray-400 dark:text-zinc-500 mb-0.5">
-                {format(new Date(hoje.date), "dd 'de' MMMM", { locale: ptBR })}
+                {format(parseISO(hoje.date.slice(0, 10)), "dd 'de' MMMM", { locale: ptBR })}
               </p>
               <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500">Fechamento</p>
             </div>
@@ -159,7 +159,7 @@ export default function CaixaPage() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
-                      {format(new Date(r.date), 'dd/MM/yyyy', { locale: ptBR })}
+                      {format(parseISO(r.date.slice(0, 10)), 'dd/MM/yyyy', { locale: ptBR })}
                     </p>
                     {r.observacao && (
                       <p className="text-xs text-gray-400 dark:text-zinc-500 truncate">{r.observacao}</p>

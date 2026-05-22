@@ -39,7 +39,7 @@ export default function BottomSheet({ open, onClose, title, children }: Props) {
             </svg>
           </button>
         </div>
-        <div className="overflow-y-auto flex-1 p-5 pb-10">
+        <div className="overflow-y-auto flex-1 p-5" style={{ paddingBottom: 'max(2.5rem, env(safe-area-inset-bottom))' }}>
           {children}
         </div>
       </div>

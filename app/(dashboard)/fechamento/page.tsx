@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { format, addMonths, subMonths, startOfMonth } from 'date-fns'
+import { format, parseISO, addMonths, subMonths, startOfMonth } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import BottomSheet from '@/components/BottomSheet'
 import CurrencyInput from '@/components/CurrencyInput'
@@ -231,9 +231,9 @@ export default function MesPage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
-                          {format(new Date(v.date), 'dd/MM', { locale: ptBR })}
+                          {format(parseISO(v.date.slice(0, 10)), 'dd/MM', { locale: ptBR })}
                           <span className="text-gray-400 dark:text-zinc-500 text-xs ml-1">
-                            {format(new Date(v.date), 'EEE', { locale: ptBR })}
+                            {format(parseISO(v.date.slice(0, 10)), 'EEE', { locale: ptBR })}
                           </span>
                         </p>
                         {v.pizzas > 0 && <span className="text-xs text-gray-400 dark:text-zinc-500">{v.pizzas} pizzas</span>}
@@ -267,7 +267,7 @@ export default function MesPage() {
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{f.nome}</p>
                     <p className="text-xs text-gray-400 dark:text-zinc-500">
-                      {format(new Date(f.date), 'dd/MM', { locale: ptBR })}
+                      {format(parseISO(f.date.slice(0, 10)), 'dd/MM', { locale: ptBR })}
                       {f.semana ? ` · ${f.semana}` : ''}
                     </p>
                   </div>
@@ -294,7 +294,7 @@ export default function MesPage() {
                 <div key={i.id} className="flex items-center gap-3 px-4 py-3.5">
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{i.fornecedor}</p>
-                    <p className="text-xs text-gray-400 dark:text-zinc-500">{format(new Date(i.date), 'dd/MM', { locale: ptBR })}</p>
+                    <p className="text-xs text-gray-400 dark:text-zinc-500">{format(parseISO(i.date.slice(0, 10)), 'dd/MM', { locale: ptBR })}</p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">R$ {fmt(i.valor)}</p>
@@ -326,7 +326,7 @@ export default function MesPage() {
                   <div className="min-w-0 flex-1">
                     <p className={`text-sm font-medium truncate ${c.pago ? 'text-gray-400 dark:text-zinc-500 line-through' : 'text-gray-800 dark:text-gray-100'}`}>{c.despesa}</p>
                     <p className="text-xs text-gray-400 dark:text-zinc-500">
-                      {c.diaVencimento ? `Vence dia ${c.diaVencimento}` : format(new Date(c.date), 'dd/MM', { locale: ptBR })}
+                      {c.diaVencimento ? `Vence dia ${c.diaVencimento}` : format(parseISO(c.date.slice(0, 10)), 'dd/MM', { locale: ptBR })}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">

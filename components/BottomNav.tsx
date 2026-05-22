@@ -72,7 +72,8 @@ export default function BottomNav() {
   const tabs = session?.user?.role === 'CAIXA' ? caixaTabs : adminTabs
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 md:hidden z-40 bg-white dark:bg-zinc-900 border-t border-cream-200 dark:border-zinc-800">
+    <nav className="fixed bottom-0 inset-x-0 md:hidden z-40 bg-white dark:bg-zinc-900 border-t border-cream-200 dark:border-zinc-800"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <div className="flex">
         {tabs.map(({ href, label, Icon }) => {
           const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href)
