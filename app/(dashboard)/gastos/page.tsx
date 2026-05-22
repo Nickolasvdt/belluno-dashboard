@@ -43,14 +43,17 @@ export default function RegistrosPage() {
   const now = new Date()
   const mes = now.getMonth() + 1
   const ano = now.getFullYear()
+  const prevMes = mes === 1 ? 12 : mes - 1
+  const prevAno = mes === 1 ? ano - 1 : ano
 
   const [entradas, setEntradas] = useState<Entrada[]>([])
   const [loading, setLoading] = useState(true)
   const [filtro, setFiltro] = useState<Filtro>('semana')
   const [catFiltro, setCatFiltro] = useState<Tipo | 'todos'>('todos')
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
 
-  // Add sheet state
   const [open, setOpen] = useState(false)
+  const [editId, setEditId] = useState<number | null>(null)
   const [tipo, setTipo] = useState<Tipo>('insumo')
   const [date, setDate] = useState(format(now, 'yyyy-MM-dd'))
   const [descricao, setDescricao] = useState('')
@@ -64,22 +67,29 @@ export default function RegistrosPage() {
     setLoading(true)
     try {
       const qs = `mes=${mes}&ano=${ano}`
-      const [ins, func, cont] = await Promise.all([
+      const qsPrev = `mes=${prevMes}&ano=${prevAno}`
+      const [ins, func, cont, insPrev, funcPrev, contPrev] = await Promise.all([
         fetch(`/api/fechamento/insumos?${qs}`).then(r => r.json()),
         fetch(`/api/fechamento/funcionarios?${qs}`).then(r => r.json()),
         fetch(`/api/fechamento/contas?${qs}`).then(r => r.json()),
+        fetch(`/api/fechamento/insumos?${qsPrev}`).then(r => r.json()),
+        fetch(`/api/fechamento/funcionarios?${qsPrev}`).then(r => r.json()),
+        fetch(`/api/fechamento/contas?${qsPrev}`).then(r => r.json()),
       ])
+      const allIns = [...(Array.isArray(ins) ? ins : []), ...(Array.isArray(insPrev) ? insPrev : [])]
+      const allFunc = [...(Array.isArray(func) ? func : []), ...(Array.isArray(funcPrev) ? funcPrev : [])]
+      const allCont = [...(Array.isArray(cont) ? cont : []), ...(Array.isArray(contPrev) ? contPrev : [])]
       const merged: Entrada[] = [
-        ...(Array.isArray(ins) ? ins : []).map((i: any) => ({ id: i.id, tipo: 'insumo' as Tipo, date: i.date, descricao: i.fornecedor, valor: i.valor })),
-        ...(Array.isArray(func) ? func : []).map((f: any) => ({ id: f.id, tipo: 'funcionario' as Tipo, date: f.date, descricao: f.nome, valor: f.valor, semana: f.semana })),
-        ...(Array.isArray(cont) ? cont : []).map((c: any) => ({ id: c.id, tipo: 'conta' as Tipo, date: c.date, descricao: c.despesa, valor: c.valor, pago: c.pago, diaVencimento: c.diaVencimento })),
+        ...allIns.map((i: any) => ({ id: i.id, tipo: 'insumo' as Tipo, date: i.date, descricao: i.fornecedor, valor: i.valor })),
+        ...allFunc.map((f: any) => ({ id: f.id, tipo: 'funcionario' as Tipo, date: f.date, descricao: f.nome, valor: f.valor, semana: f.semana })),
+        ...allCont.map((c: any) => ({ id: c.id, tipo: 'conta' as Tipo, date: c.date, descricao: c.despesa, valor: c.valor, pago: c.pago, diaVencimento: c.diaVencimento })),
       ]
       merged.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       setEntradas(merged)
     } finally {
       setLoading(false)
     }
-  }, [mes, ano])
+  }, [mes, ano, prevMes, prevAno])
 
   useEffect(() => { fetchAll() }, [fetchAll])
 
@@ -95,31 +105,51 @@ export default function RegistrosPage() {
   const filtered = entradas.filter(e => applyFiltro(e) && (catFiltro === 'todos' || e.tipo === catFiltro))
   const total = r2(filtered.reduce((s, e) => r2(s + e.valor), 0))
 
-  function reset() { setDescricao(''); setValor(0); setSemana(''); setPago(false); setDiaVenc('') }
+  function reset() {
+    setEditId(null)
+    setDescricao(''); setValor(0); setSemana(''); setPago(false); setDiaVenc('')
+    setDate(format(new Date(), 'yyyy-MM-dd'))
+  }
+
+  function openEdit(e: Entrada) {
+    setEditId(e.id)
+    setTipo(e.tipo)
+    setDate(e.date.slice(0, 10))
+    setDescricao(e.descricao)
+    setValor(e.valor)
+    setSemana(e.semana ?? '')
+    setPago(e.pago ?? false)
+    setDiaVenc(e.diaVencimento ? String(e.diaVencimento) : '')
+    setOpen(true)
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setSubmitting(true)
     try {
+      const method = editId ? 'PUT' : 'POST'
       if (tipo === 'insumo') {
-        await fetch('/api/fechamento/insumos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date, fornecedor: descricao, valor }) })
+        const url = editId ? `/api/fechamento/insumos/${editId}` : '/api/fechamento/insumos'
+        await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date, fornecedor: descricao, valor }) })
       } else if (tipo === 'funcionario') {
-        await fetch('/api/fechamento/funcionarios', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date, nome: descricao, semana, valor }) })
+        const url = editId ? `/api/fechamento/funcionarios/${editId}` : '/api/fechamento/funcionarios'
+        await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date, nome: descricao, semana, valor }) })
       } else {
-        await fetch('/api/fechamento/contas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date, despesa: descricao, valor, pago, diaVencimento: diaVenc ? parseInt(diaVenc) : null }) })
+        const url = editId ? `/api/fechamento/contas/${editId}` : '/api/fechamento/contas'
+        await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date, despesa: descricao, valor, pago, diaVencimento: diaVenc ? parseInt(diaVenc) : null }) })
       }
       reset(); setOpen(false); fetchAll()
     } finally { setSubmitting(false) }
   }
 
   async function handleDelete(e: Entrada) {
-    if (!confirm('Excluir este registro?')) return
     const endpoints: Record<Tipo, string> = {
       insumo: `/api/fechamento/insumos/${e.id}`,
       funcionario: `/api/fechamento/funcionarios/${e.id}`,
       conta: `/api/fechamento/contas/${e.id}`,
     }
     await fetch(endpoints[e.tipo], { method: 'DELETE' })
+    setDeleteConfirm(null)
     fetchAll()
   }
 
@@ -165,37 +195,63 @@ export default function RegistrosPage() {
         </div>
       ) : (
         <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-cream-200 dark:border-zinc-800 divide-y divide-cream-200 dark:divide-zinc-800 overflow-hidden shadow-sm">
-          {filtered.map(e => (
-            <div key={`${e.tipo}-${e.id}`} className="flex items-center gap-3 px-4 py-3.5">
-              <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full shrink-0 ${tipoCls[e.tipo]}`}>
-                {tipoLabel[e.tipo]}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{e.descricao}</p>
-                <p className="text-xs text-gray-400 dark:text-zinc-500">
-                  {format(parseISO(e.date.slice(0, 10)), 'dd/MM', { locale: ptBR })}
-                  {e.semana ? ` · ${e.semana}` : ''}
-                  {e.tipo === 'conta' && e.diaVencimento ? ` · vence dia ${e.diaVencimento}` : ''}
-                  {e.tipo === 'conta' ? ` · ${e.pago ? 'Pago' : 'Pendente'}` : ''}
-                </p>
+          {filtered.map(e => {
+            const key = `${e.tipo}-${e.id}`
+            const confirming = deleteConfirm === key
+            return (
+              <div key={key} className="flex items-center gap-3 px-4 py-3.5">
+                <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full shrink-0 ${tipoCls[e.tipo]}`}>
+                  {tipoLabel[e.tipo]}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{e.descricao}</p>
+                  <p className="text-xs text-gray-400 dark:text-zinc-500">
+                    {format(parseISO(e.date.slice(0, 10)), 'dd/MM', { locale: ptBR })}
+                    {e.semana ? ` · ${e.semana}` : ''}
+                    {e.tipo === 'conta' && e.diaVencimento ? ` · vence dia ${e.diaVencimento}` : ''}
+                    {e.tipo === 'conta' ? ` · ${e.pago ? 'Pago' : 'Pendente'}` : ''}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  {confirming ? (
+                    <>
+                      <button onClick={() => setDeleteConfirm(null)}
+                        className="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-zinc-400 font-medium">
+                        Cancelar
+                      </button>
+                      <button onClick={() => handleDelete(e)}
+                        className="text-xs px-2.5 py-1.5 rounded-lg bg-red-500 text-white font-medium">
+                        Excluir
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">R$ {fmt(e.valor)}</span>
+                      <button onClick={() => openEdit(e)}
+                        className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-primary hover:bg-primary/5 transition-colors">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                          <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                          <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </svg>
+                      </button>
+                      <button onClick={() => setDeleteConfirm(key)}
+                        className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                          <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                        </svg>
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">R$ {fmt(e.valor)}</span>
-                <button onClick={() => handleDelete(e)}
-                  className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                    <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 
       {/* FAB */}
       <button
-        onClick={() => setOpen(true)}
+        onClick={() => { reset(); setOpen(true) }}
         className="fixed bottom-20 right-4 md:bottom-6 md:right-6 w-14 h-14 bg-primary text-white rounded-full shadow-xl shadow-primary/25 flex items-center justify-center z-30 hover:bg-primary-dark transition-all active:scale-95"
       >
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -203,14 +259,14 @@ export default function RegistrosPage() {
         </svg>
       </button>
 
-      {/* Add bottom sheet */}
-      <BottomSheet open={open} onClose={() => { setOpen(false); reset() }} title="Novo Registro">
+      {/* Add/Edit bottom sheet */}
+      <BottomSheet open={open} onClose={() => { setOpen(false); reset() }} title={editId ? 'Editar Registro' : 'Novo Registro'}>
         <div className="flex gap-1.5 mb-5">
           {(['insumo', 'funcionario', 'conta'] as Tipo[]).map(t => (
-            <button key={t} type="button" onClick={() => setTipo(t)}
+            <button key={t} type="button" onClick={() => !editId && setTipo(t)}
               className={`px-3.5 py-1.5 rounded-full text-sm font-medium border transition-colors ${
-                tipo === t ? 'bg-primary text-white border-primary' : 'border-gray-200 dark:border-zinc-700 text-gray-500 dark:text-zinc-400 hover:border-primary hover:text-primary'
-              }`}>
+                tipo === t ? 'bg-primary text-white border-primary' : 'border-gray-200 dark:border-zinc-700 text-gray-500 dark:text-zinc-400'
+              } ${editId ? 'opacity-60 cursor-default' : 'hover:border-primary hover:text-primary'}`}>
               {tipoLabel[t]}
             </button>
           ))}
@@ -253,7 +309,7 @@ export default function RegistrosPage() {
 
           <button type="submit" disabled={submitting || valor === 0}
             className="w-full py-3 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-dark disabled:opacity-50 transition-colors mt-1">
-            {submitting ? 'Salvando...' : 'Salvar'}
+            {submitting ? 'Salvando...' : editId ? 'Atualizar' : 'Salvar'}
           </button>
         </form>
       </BottomSheet>

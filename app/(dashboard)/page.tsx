@@ -103,7 +103,7 @@ export default async function HojePage() {
       {recent.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-2.5">
-            <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500">Registros Recentes</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500">Gastos Recentes</p>
             <Link href="/gastos" className="text-xs text-primary font-semibold">Ver todos →</Link>
           </div>
           <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-cream-200 dark:border-zinc-800 divide-y divide-cream-200 dark:divide-zinc-800 overflow-hidden shadow-sm">

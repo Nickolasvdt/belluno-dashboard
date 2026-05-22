@@ -27,6 +27,7 @@ export default function CaixaPage() {
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
   const [editId, setEditId] = useState<number | null>(null)
+  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
   const today = format(new Date(), 'yyyy-MM-dd')
@@ -82,8 +83,8 @@ export default function CaixaPage() {
   }
 
   async function handleDelete(id: number) {
-    if (!confirm('Excluir este registro?')) return
     await fetch(`/api/caixa/${id}`, { method: 'DELETE' })
+    setDeleteConfirm(null)
     carregar()
   }
 
@@ -154,44 +155,64 @@ export default function CaixaPage() {
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500 mb-2.5">Histórico</p>
           <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-cream-200 dark:border-zinc-800 divide-y divide-cream-200 dark:divide-zinc-800 overflow-hidden shadow-sm">
-            {registros.slice(temHoje ? 1 : 0, 20).map(r => (
-              <div key={r.id} className="flex items-center gap-3 px-4 py-3.5">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
-                      {format(parseISO(r.date.slice(0, 10)), 'dd/MM/yyyy', { locale: ptBR })}
-                    </p>
-                    {r.observacao && (
-                      <p className="text-xs text-gray-400 dark:text-zinc-500 truncate">{r.observacao}</p>
+            {registros.slice(temHoje ? 1 : 0, 20).map(r => {
+              const confirming = deleteConfirm === r.id
+              return (
+                <div key={r.id} className="flex items-center gap-3 px-4 py-3.5">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-100">
+                        {format(parseISO(r.date.slice(0, 10)), 'dd/MM/yyyy', { locale: ptBR })}
+                      </p>
+                      {r.observacao && !confirming && (
+                        <p className="text-xs text-gray-400 dark:text-zinc-500 truncate">{r.observacao}</p>
+                      )}
+                    </div>
+                    {!confirming && (
+                      <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
+                        <span className="text-emerald-600 dark:text-emerald-400">+{fmt(r.entradas)}</span>
+                        <span className="mx-1">·</span>
+                        <span className="text-primary">-{fmt(r.saidas)}</span>
+                      </p>
                     )}
                   </div>
-                  <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
-                    <span className="text-emerald-600 dark:text-emerald-400">+{fmt(r.entradas)}</span>
-                    <span className="mx-1">·</span>
-                    <span className="text-primary">-{fmt(r.saidas)}</span>
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-gray-800 dark:text-gray-100">R$ {fmt(r.fechamento)}</p>
-                    <p className="text-[11px] text-gray-400 dark:text-zinc-500">inicial: {fmt(r.saldoInicial)}</p>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {confirming ? (
+                      <>
+                        <button onClick={() => setDeleteConfirm(null)}
+                          className="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-zinc-400 font-medium">
+                          Cancelar
+                        </button>
+                        <button onClick={() => handleDelete(r.id)}
+                          className="text-xs px-2.5 py-1.5 rounded-lg bg-red-500 text-white font-medium">
+                          Excluir
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <div className="text-right">
+                          <p className="text-sm font-bold text-gray-800 dark:text-gray-100">R$ {fmt(r.fechamento)}</p>
+                          <p className="text-[11px] text-gray-400 dark:text-zinc-500">inicial: {fmt(r.saldoInicial)}</p>
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <button onClick={() => openEdit(r)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-primary hover:bg-primary/5 transition-colors">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                              <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
+                              <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
+                            </svg>
+                          </button>
+                          <button onClick={() => setDeleteConfirm(r.id)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                              <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                            </svg>
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
-                  <div className="flex flex-col gap-1">
-                    <button onClick={() => openEdit(r)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-primary hover:bg-primary/5 transition-colors">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-                      </svg>
-                    </button>
-                    <button onClick={() => handleDelete(r.id)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                        <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                      </svg>
-                    </button>
-                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       )}

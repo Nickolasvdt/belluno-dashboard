@@ -15,7 +15,6 @@ type Conta = { id: number; date: string; despesa: string; valor: number; pago: b
 
 function r2(n: number) { return Math.round(n * 100) / 100 }
 function fmt(v: number) { return v.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) }
-function fmtK(v: number) { return v >= 1000 ? `${(v / 1000).toFixed(1)}k` : fmt(v) }
 
 const inp = 'w-full px-3 py-2.5 border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary'
 
@@ -32,6 +31,7 @@ export default function MesPage() {
   const [tab, setTab] = useState<Tab>('vendas')
   const [open, setOpen] = useState(false)
   const [editItem, setEditItem] = useState<any>(null)
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
 
   const mes = ref.getMonth() + 1
   const ano = ref.getFullYear()
@@ -62,18 +62,21 @@ export default function MesPage() {
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
-    const qs = `mes=${mes}&ano=${ano}`
-    const [v, f, i, c] = await Promise.all([
-      fetch(`/api/fechamento/vendas?${qs}`).then(r => r.json()),
-      fetch(`/api/fechamento/funcionarios?${qs}`).then(r => r.json()),
-      fetch(`/api/fechamento/insumos?${qs}`).then(r => r.json()),
-      fetch(`/api/fechamento/contas?${qs}`).then(r => r.json()),
-    ])
-    setVendas(Array.isArray(v) ? v.sort((a: Venda, b: Venda) => new Date(b.date).getTime() - new Date(a.date).getTime()) : [])
-    setFuncionarios(Array.isArray(f) ? f : [])
-    setInsumos(Array.isArray(i) ? i : [])
-    setContas(Array.isArray(c) ? c.sort((a: Conta, b: Conta) => (a.diaVencimento ?? 99) - (b.diaVencimento ?? 99)) : [])
-    setLoading(false)
+    try {
+      const qs = `mes=${mes}&ano=${ano}`
+      const [v, f, i, c] = await Promise.all([
+        fetch(`/api/fechamento/vendas?${qs}`).then(r => r.json()),
+        fetch(`/api/fechamento/funcionarios?${qs}`).then(r => r.json()),
+        fetch(`/api/fechamento/insumos?${qs}`).then(r => r.json()),
+        fetch(`/api/fechamento/contas?${qs}`).then(r => r.json()),
+      ])
+      setVendas(Array.isArray(v) ? v.sort((a: Venda, b: Venda) => new Date(b.date).getTime() - new Date(a.date).getTime()) : [])
+      setFuncionarios(Array.isArray(f) ? f : [])
+      setInsumos(Array.isArray(i) ? i : [])
+      setContas(Array.isArray(c) ? c.sort((a: Conta, b: Conta) => (a.diaVencimento ?? 99) - (b.diaVencimento ?? 99)) : [])
+    } finally {
+      setLoading(false)
+    }
   }, [mes, ano])
 
   useEffect(() => { fetchAll() }, [fetchAll])
@@ -142,7 +145,6 @@ export default function MesPage() {
   }
 
   async function handleDelete(tab: Tab, id: number) {
-    if (!confirm('Excluir?')) return
     const urls: Record<Tab, string> = {
       vendas: `/api/fechamento/vendas/${id}`,
       funcionarios: `/api/fechamento/funcionarios/${id}`,
@@ -150,6 +152,7 @@ export default function MesPage() {
       contas: `/api/fechamento/contas/${id}`,
     }
     await fetch(urls[tab], { method: 'DELETE' })
+    setDeleteConfirm(null)
     fetchAll()
   }
 
@@ -185,17 +188,19 @@ export default function MesPage() {
       </div>
 
       {/* Summary row */}
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         {[
-          { label: 'Receita', value: receita, color: 'text-emerald-600 dark:text-emerald-400' },
+          { label: 'Receita Líq.', value: receita, color: 'text-emerald-600 dark:text-emerald-400' },
           { label: 'Despesas', value: despesas, color: 'text-primary' },
-          { label: 'Resultado', value: resultado, color: isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-primary' },
+          { label: 'Resultado', value: resultado, color: isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-primary', prefix: isPositive ? '+' : '–' },
           { label: 'Pizzas', value: totalPizzas, color: 'text-gray-700 dark:text-gray-300', isInt: true },
         ].map(s => (
-          <div key={s.label} className="bg-white dark:bg-zinc-900 rounded-xl border border-cream-200 dark:border-zinc-800 p-3 shadow-sm text-center">
+          <div key={s.label} className="bg-white dark:bg-zinc-900 rounded-xl border border-cream-200 dark:border-zinc-800 p-3 shadow-sm">
             <p className="text-[10px] text-gray-400 dark:text-zinc-500 uppercase tracking-wide mb-1">{s.label}</p>
-            <p className={`text-sm font-bold ${s.color}`}>
-              {s.isInt ? s.value : `R$ ${fmtK(s.value)}`}
+            <p className={`text-base font-bold ${s.color}`}>
+              {s.isInt
+                ? s.value
+                : `${'prefix' in s && s.prefix ? s.prefix + ' ' : ''}R$ ${fmt(Math.abs(s.value as number))}`}
             </p>
           </div>
         ))}
@@ -226,6 +231,8 @@ export default function MesPage() {
                 <p className="text-center py-10 text-sm text-gray-400 dark:text-zinc-500">Sem vendas neste mês</p>
               ) : vendas.map(v => {
                 const br = r2(v.avista + v.debito + v.credito + v.pix + v.ifood + v.outros)
+                const dkey = `vendas-${v.id}`
+                const confirming = deleteConfirm === dkey
                 return (
                   <div key={v.id} className="flex items-center gap-3 px-4 py-3.5">
                     <div className="min-w-0 flex-1">
@@ -238,18 +245,29 @@ export default function MesPage() {
                         </p>
                         {v.pizzas > 0 && <span className="text-xs text-gray-400 dark:text-zinc-500">{v.pizzas} pizzas</span>}
                       </div>
-                      <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
-                        {v.taxas > 0 && `taxas: R$ ${fmt(v.taxas)} · `}líq: R$ {fmt(r2(br - v.taxas))}
-                      </p>
+                      {!confirming && (
+                        <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
+                          {v.taxas > 0 && `taxas: R$ ${fmt(v.taxas)} · `}líq: R$ {fmt(r2(br - v.taxas))}
+                        </p>
+                      )}
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <p className="text-sm font-bold text-gray-800 dark:text-gray-100">R$ {fmt(br)}</p>
-                      <button onClick={() => openEdit(v)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-primary hover:bg-primary/5 transition-colors">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
-                      </button>
-                      <button onClick={() => handleDelete('vendas', v.id)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 1L11 11M11 1L1 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
-                      </button>
+                      {confirming ? (
+                        <>
+                          <button onClick={() => setDeleteConfirm(null)} className="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-zinc-400 font-medium">Cancelar</button>
+                          <button onClick={() => handleDelete('vendas', v.id)} className="text-xs px-2.5 py-1.5 rounded-lg bg-red-500 text-white font-medium">Excluir</button>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-sm font-bold text-gray-800 dark:text-gray-100">R$ {fmt(br)}</p>
+                          <button onClick={() => openEdit(v)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-primary hover:bg-primary/5 transition-colors">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                          </button>
+                          <button onClick={() => setDeleteConfirm(dkey)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 1L11 11M11 1L1 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 )
@@ -262,26 +280,41 @@ export default function MesPage() {
             <>
               {funcionarios.length === 0 ? (
                 <p className="text-center py-10 text-sm text-gray-400 dark:text-zinc-500">Sem registros de funcionários</p>
-              ) : funcionarios.map(f => (
-                <div key={f.id} className="flex items-center gap-3 px-4 py-3.5">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{f.nome}</p>
-                    <p className="text-xs text-gray-400 dark:text-zinc-500">
-                      {format(parseISO(f.date.slice(0, 10)), 'dd/MM', { locale: ptBR })}
-                      {f.semana ? ` · ${f.semana}` : ''}
-                    </p>
+              ) : funcionarios.map(f => {
+                const dkey = `funcionarios-${f.id}`
+                const confirming = deleteConfirm === dkey
+                return (
+                  <div key={f.id} className="flex items-center gap-3 px-4 py-3.5">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{f.nome}</p>
+                      {!confirming && (
+                        <p className="text-xs text-gray-400 dark:text-zinc-500">
+                          {format(parseISO(f.date.slice(0, 10)), 'dd/MM', { locale: ptBR })}
+                          {f.semana ? ` · ${f.semana}` : ''}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {confirming ? (
+                        <>
+                          <button onClick={() => setDeleteConfirm(null)} className="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-zinc-400 font-medium">Cancelar</button>
+                          <button onClick={() => handleDelete('funcionarios', f.id)} className="text-xs px-2.5 py-1.5 rounded-lg bg-red-500 text-white font-medium">Excluir</button>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">R$ {fmt(f.valor)}</p>
+                          <button onClick={() => openEdit(f)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-primary hover:bg-primary/5 transition-colors">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                          </button>
+                          <button onClick={() => setDeleteConfirm(dkey)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 1L11 11M11 1L1 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">R$ {fmt(f.valor)}</p>
-                    <button onClick={() => openEdit(f)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-primary hover:bg-primary/5 transition-colors">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
-                    </button>
-                    <button onClick={() => handleDelete('funcionarios', f.id)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 1L11 11M11 1L1 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
-                    </button>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </>
           )}
 
@@ -290,23 +323,38 @@ export default function MesPage() {
             <>
               {insumos.length === 0 ? (
                 <p className="text-center py-10 text-sm text-gray-400 dark:text-zinc-500">Sem insumos neste mês</p>
-              ) : insumos.map(i => (
-                <div key={i.id} className="flex items-center gap-3 px-4 py-3.5">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{i.fornecedor}</p>
-                    <p className="text-xs text-gray-400 dark:text-zinc-500">{format(parseISO(i.date.slice(0, 10)), 'dd/MM', { locale: ptBR })}</p>
+              ) : insumos.map(i => {
+                const dkey = `insumos-${i.id}`
+                const confirming = deleteConfirm === dkey
+                return (
+                  <div key={i.id} className="flex items-center gap-3 px-4 py-3.5">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{i.fornecedor}</p>
+                      {!confirming && (
+                        <p className="text-xs text-gray-400 dark:text-zinc-500">{format(parseISO(i.date.slice(0, 10)), 'dd/MM', { locale: ptBR })}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {confirming ? (
+                        <>
+                          <button onClick={() => setDeleteConfirm(null)} className="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-zinc-400 font-medium">Cancelar</button>
+                          <button onClick={() => handleDelete('insumos', i.id)} className="text-xs px-2.5 py-1.5 rounded-lg bg-red-500 text-white font-medium">Excluir</button>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">R$ {fmt(i.valor)}</p>
+                          <button onClick={() => openEdit(i)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-primary hover:bg-primary/5 transition-colors">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                          </button>
+                          <button onClick={() => setDeleteConfirm(dkey)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 1L11 11M11 1L1 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">R$ {fmt(i.valor)}</p>
-                    <button onClick={() => openEdit(i)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-primary hover:bg-primary/5 transition-colors">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
-                    </button>
-                    <button onClick={() => handleDelete('insumos', i.id)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 1L11 11M11 1L1 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
-                    </button>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </>
           )}
 
@@ -315,31 +363,48 @@ export default function MesPage() {
             <>
               {contas.length === 0 ? (
                 <p className="text-center py-10 text-sm text-gray-400 dark:text-zinc-500">Sem contas neste mês</p>
-              ) : contas.map(c => (
-                <div key={c.id} className="flex items-center gap-3 px-4 py-3.5">
-                  <button onClick={() => togglePago(c)} title={c.pago ? 'Marcar pendente' : 'Marcar pago'}
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
-                      c.pago ? 'bg-emerald-500 border-emerald-500' : 'border-gray-300 dark:border-zinc-600'
-                    }`}>
-                    {c.pago && <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>}
-                  </button>
-                  <div className="min-w-0 flex-1">
-                    <p className={`text-sm font-medium truncate ${c.pago ? 'text-gray-400 dark:text-zinc-500 line-through' : 'text-gray-800 dark:text-gray-100'}`}>{c.despesa}</p>
-                    <p className="text-xs text-gray-400 dark:text-zinc-500">
-                      {c.diaVencimento ? `Vence dia ${c.diaVencimento}` : format(parseISO(c.date.slice(0, 10)), 'dd/MM', { locale: ptBR })}
-                    </p>
+              ) : contas.map(c => {
+                const dkey = `contas-${c.id}`
+                const confirming = deleteConfirm === dkey
+                return (
+                  <div key={c.id} className="flex items-center gap-3 px-4 py-3.5">
+                    {!confirming && (
+                      <button onClick={() => togglePago(c)} title={c.pago ? 'Marcar pendente' : 'Marcar pago'}
+                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
+                          c.pago ? 'bg-emerald-500 border-emerald-500' : 'border-gray-300 dark:border-zinc-600'
+                        }`}>
+                        {c.pago && <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><polyline points="1.5,5 4,7.5 8.5,2.5" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+                      </button>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className={`text-sm font-medium truncate ${c.pago && !confirming ? 'text-gray-400 dark:text-zinc-500 line-through' : 'text-gray-800 dark:text-gray-100'}`}>{c.despesa}</p>
+                      {!confirming && (
+                        <p className="text-xs text-gray-400 dark:text-zinc-500">
+                          {c.diaVencimento ? `Vence dia ${c.diaVencimento}` : format(parseISO(c.date.slice(0, 10)), 'dd/MM', { locale: ptBR })}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {confirming ? (
+                        <>
+                          <button onClick={() => setDeleteConfirm(null)} className="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-zinc-700 text-gray-600 dark:text-zinc-400 font-medium">Cancelar</button>
+                          <button onClick={() => handleDelete('contas', c.id)} className="text-xs px-2.5 py-1.5 rounded-lg bg-red-500 text-white font-medium">Excluir</button>
+                        </>
+                      ) : (
+                        <>
+                          <p className={`text-sm font-semibold ${c.pago ? 'text-gray-400 dark:text-zinc-500' : 'text-gray-800 dark:text-gray-100'}`}>R$ {fmt(c.valor)}</p>
+                          <button onClick={() => openEdit(c)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-primary hover:bg-primary/5 transition-colors">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                          </button>
+                          <button onClick={() => setDeleteConfirm(dkey)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 1L11 11M11 1L1 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <p className={`text-sm font-semibold ${c.pago ? 'text-gray-400 dark:text-zinc-500' : 'text-gray-800 dark:text-gray-100'}`}>R$ {fmt(c.valor)}</p>
-                    <button onClick={() => openEdit(c)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-primary hover:bg-primary/5 transition-colors">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
-                    </button>
-                    <button onClick={() => handleDelete('contas', c.id)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 1L11 11M11 1L1 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
-                    </button>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </>
           )}
         </div>

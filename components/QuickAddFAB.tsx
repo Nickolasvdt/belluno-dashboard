@@ -148,9 +148,9 @@ export default function QuickAddFAB() {
                 </div>
               </div>
               <div className="p-3 bg-cream-100 dark:bg-zinc-800 rounded-xl">
-                <p className="text-xs text-gray-500 dark:text-zinc-400">Total bruto</p>
-                <p className="text-xl font-bold text-gray-800 dark:text-gray-100">
-                  R$ {brutoVenda.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                <p className="text-xs text-gray-500 dark:text-zinc-400">Bruto · Líquido</p>
+                <p className="text-lg font-bold text-gray-800 dark:text-gray-100">
+                  R$ {brutoVenda.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} · <span className="text-emerald-600 dark:text-emerald-400">R$ {(brutoVenda - taxas).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                 </p>
               </div>
             </div>
