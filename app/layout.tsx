@@ -1,11 +1,13 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter, Playfair_Display } from 'next/font/google'
+import { DM_Sans, Playfair_Display } from 'next/font/google'
 import './globals.css'
 import Providers from '@/components/Providers'
 
-const inter = Inter({
+const dmSans = DM_Sans({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-dm-sans',
+  weight: ['300', '400', '500', '600', '700'],
+  display: 'swap',
 })
 
 const playfair = Playfair_Display({
@@ -13,6 +15,7 @@ const playfair = Playfair_Display({
   variable: '--font-playfair',
   style: ['normal', 'italic'],
   weight: ['400', '600', '700', '900'],
+  display: 'swap',
 })
 
 export const metadata: Metadata = {
@@ -22,16 +25,18 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   viewportFit: 'cover',
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
-        {/* Aplica o tema antes da hidratação para evitar flash */}
+        {/* Apply theme before hydration to avoid flash */}
         <script dangerouslySetInnerHTML={{ __html: `try{if(localStorage.getItem('theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}` }} />
       </head>
-      <body className={`${inter.variable} ${playfair.variable} ${inter.className}`}>
+      <body className={`${dmSans.variable} ${playfair.variable} font-sans`}>
         <Providers>{children}</Providers>
       </body>
     </html>
