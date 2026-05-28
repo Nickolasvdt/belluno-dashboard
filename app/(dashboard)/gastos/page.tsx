@@ -48,7 +48,7 @@ export default function RegistrosPage() {
 
   const [entradas, setEntradas] = useState<Entrada[]>([])
   const [loading, setLoading] = useState(true)
-  const [filtro, setFiltro] = useState<Filtro>('semana')
+  const [filtro, setFiltro] = useState<Filtro>('mes')
   const [catFiltro, setCatFiltro] = useState<Tipo | 'todos'>('todos')
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
 

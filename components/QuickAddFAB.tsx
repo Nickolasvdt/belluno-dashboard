@@ -8,22 +8,26 @@ import CurrencyInput from './CurrencyInput'
 
 type Cat = 'insumo' | 'funcionario' | 'conta' | 'venda'
 
+type Props = {
+  defaultCat?: Cat
+}
+
 function r2(n: number) { return Math.round(n * 100) / 100 }
 
 const inp =
   'w-full px-3.5 py-2.5 border border-cream-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 dark:text-white rounded-xl text-sm placeholder:text-gray-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary/50 transition-all'
 
 const cats: { key: Cat; label: string }[] = [
+  { key: 'venda',      label: 'Venda' },
   { key: 'insumo',     label: 'Insumo' },
   { key: 'funcionario',label: 'Funcionário' },
   { key: 'conta',      label: 'Conta' },
-  { key: 'venda',      label: 'Venda' },
 ]
 
-export default function QuickAddFAB() {
+export default function QuickAddFAB({ defaultCat = 'venda' }: Props) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
-  const [cat, setCat] = useState<Cat>('insumo')
+  const [cat, setCat] = useState<Cat>(defaultCat)
   const [submitting, setSubmitting] = useState(false)
 
   const today = format(new Date(), 'yyyy-MM-dd')
@@ -47,6 +51,7 @@ export default function QuickAddFAB() {
     setAvista(0); setDebito(0); setCredito(0); setPix(0); setIfood(0); setOutros(0)
     setTaxas(0); setPizzas(0)
     setDate(format(new Date(), 'yyyy-MM-dd'))
+    setCat(defaultCat)
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -141,28 +146,43 @@ export default function QuickAddFAB() {
 
           {cat === 'venda' && (
             <div className="space-y-3.5">
+              {/* Dinheiro & débito */}
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500 mb-2">Recebimentos</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <CurrencyInput label="À Vista" value={avista} onChange={setAvista} />
+                  <CurrencyInput label="Stone / Débito" value={debito} onChange={setDebito} />
+                  <CurrencyInput label="Ticket / VR / Alelo" value={credito} onChange={setCredito} />
+                  <CurrencyInput label="PIX (Tuna)" value={pix} onChange={setPix} />
+                </div>
+              </div>
+              {/* Delivery */}
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500 mb-2">Delivery</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <CurrencyInput label="iFood" value={ifood} onChange={setIfood} />
+                  <CurrencyInput label="99Food / Keeta" value={outros} onChange={setOutros} />
+                </div>
+              </div>
+              {/* Taxas e pizzas */}
               <div className="grid grid-cols-2 gap-3">
-                <CurrencyInput label="À Vista" value={avista} onChange={setAvista} />
-                <CurrencyInput label="Stone / Débito" value={debito} onChange={setDebito} />
-                <CurrencyInput label="Ticket / VR / Alelo" value={credito} onChange={setCredito} />
-                <CurrencyInput label="PIX (Tuna)" value={pix} onChange={setPix} />
-                <CurrencyInput label="iFood" value={ifood} onChange={setIfood} />
-                <CurrencyInput label="99Food / Keeta" value={outros} onChange={setOutros} />
                 <CurrencyInput label="Taxas" value={taxas} onChange={setTaxas} />
                 <div>
-                  <label className="text-xs font-medium text-gray-500 dark:text-zinc-500 mb-1.5 block">Pizzas</label>
+                  <label className="text-xs font-medium text-gray-500 dark:text-zinc-500 mb-1.5 block">Pizzas vendidas</label>
                   <input type="number" value={pizzas || ''} onChange={e => setPizzas(parseInt(e.target.value) || 0)} placeholder="0" className={inp} />
                 </div>
               </div>
-              <div className="px-3.5 py-3 bg-cream-100 dark:bg-zinc-800/60 rounded-xl">
-                <p className="text-xs text-gray-500 dark:text-zinc-400 mb-0.5">Bruto · Líquido</p>
-                <p className="text-base font-bold text-gray-800 dark:text-gray-100">
-                  R$ {brutoVenda.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  {' · '}
-                  <span className="text-emerald-600 dark:text-emerald-400">
-                    R$ {liquidoVenda.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </span>
-                </p>
+              {/* Preview */}
+              <div className="px-3.5 py-3 bg-cream-100 dark:bg-zinc-800/60 rounded-xl flex justify-between items-center">
+                <div>
+                  <p className="text-[10px] text-gray-500 dark:text-zinc-400 uppercase tracking-wide">Bruto</p>
+                  <p className="text-sm font-bold text-gray-800 dark:text-gray-100">R$ {brutoVenda.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                </div>
+                <div className="text-gray-300 dark:text-zinc-700 text-lg">→</div>
+                <div>
+                  <p className="text-[10px] text-gray-500 dark:text-zinc-400 uppercase tracking-wide">Líquido</p>
+                  <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">R$ {liquidoVenda.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                </div>
               </div>
             </div>
           )}
