@@ -32,7 +32,7 @@ export default function CurrencyInput({ value, onChange, label, required, placeh
         onChange={handleChange}
         required={required}
         placeholder={placeholder ?? 'R$ 0,00'}
-        className="w-full min-w-0 px-3.5 py-2.5 border border-cream-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-gray-800 dark:text-white rounded-xl text-sm placeholder:text-gray-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary/50 transition-all"
+        className="w-full min-w-0 px-3.5 py-2.5 border border-cream-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-gray-800 dark:text-white rounded-xl text-sm placeholder:text-gray-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-accent/30 focus:border-accent/50 transition-all"
       />
     </div>
   )
