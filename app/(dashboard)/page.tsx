@@ -5,10 +5,12 @@ import { prisma } from '@/lib/prisma'
 import { format, startOfMonth, endOfMonth, startOfDay, endOfDay } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import Link from 'next/link'
-import QuickAddFAB from '@/components/QuickAddFAB'
+import WeeklyBarChart from '@/components/WeeklyBarChart'
+import type { WeekData } from '@/components/WeeklyBarChart'
 
 function r2(n: number) { return Math.round(n * 100) / 100 }
 function fmt(v: number) { return v.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) }
+function weekOf(date: Date): number { return Math.min(Math.ceil(new Date(date).getDate() / 7), 4) }
 
 export default async function HojePage() {
   const session = await getServerSession(authOptions)
@@ -51,73 +53,74 @@ export default async function HojePage() {
     ...funcionarios.slice(0, 3).map(f => ({ tipo: 'funcionario' as const, desc: f.nome, valor: f.valor, date: f.date })),
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 6)
 
+  const weeklyData: WeekData[] = [1, 2, 3, 4].map(w => {
+    const wVendas  = vendas.filter(v => weekOf(v.date) === w)
+    const wInsumos = insumos.filter(i => weekOf(i.date) === w)
+    const wFunc    = funcionarios.filter(f => weekOf(f.date) === w)
+    const wContas  = contas.filter(c => weekOf(c.date) === w)
+    const rec  = r2(wVendas.reduce((s, v) => r2(s + v.avista + v.debito + v.credito + v.pix + v.ifood + v.outros - v.taxas), 0))
+    const desp = r2(
+      wInsumos.reduce((s, i) => r2(s + i.valor), 0) +
+      wFunc.reduce((s, f) => r2(s + f.valor), 0) +
+      wContas.reduce((s, c) => r2(s + c.valor), 0)
+    )
+    return { label: `S${w}`, receita: rec, despesas: desp }
+  })
+
   const mesLabel   = format(now, 'MMMM yyyy', { locale: ptBR })
   const isPositive = resultado >= 0
 
   return (
-    <div className="space-y-6">
-      {/* Month label */}
-      <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500 capitalize">
-        {mesLabel}
-      </p>
+    <div className="space-y-5">
+      <p className="font-mono text-[10px] tracking-[0.16em] uppercase text-mute capitalize">{mesLabel}</p>
 
-      {/* Hero card — gradient based on resultado */}
-      <div className={`rounded-2xl p-5 shadow-md ${isPositive
-        ? 'bg-gradient-to-br from-emerald-600 to-emerald-500'
-        : 'bg-gradient-to-br from-[#8B2020] to-[#b02a2a]'
-      }`}>
-        <p className="text-xs text-white/70 mb-1 uppercase tracking-wide">Resultado do mês</p>
-        <p className="text-4xl font-display font-bold tracking-tight mb-5 text-white">
+      <div className={`rounded-2xl p-5 ${isPositive ? 'bg-emerald-700' : 'bg-accent'}`}>
+        <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-white/60 mb-1">Resultado do mês</p>
+        <p className="font-display font-semibold text-[clamp(28px,6vw,38px)] tracking-tight text-white leading-none mb-2">
           {isPositive ? '+' : '–'}&nbsp;R$&nbsp;{fmt(Math.abs(resultado))}
         </p>
-        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/20">
-          <div>
-            <p className="text-[10px] text-white/60 mb-0.5 uppercase tracking-wide">Receita líquida</p>
-            <p className="text-lg font-bold text-white">R$ {fmt(receita)}</p>
-          </div>
-          <div>
-            <p className="text-[10px] text-white/60 mb-0.5 uppercase tracking-wide">Despesas</p>
-            <p className="text-lg font-bold text-white/80">R$ {fmt(despesas)}</p>
-          </div>
-        </div>
+        <p className="text-xs text-white/70">
+          Receita&nbsp;<span className="font-semibold text-white">R$&nbsp;{fmt(receita)}</span>
+          &nbsp;·&nbsp;
+          Despesas&nbsp;<span className="font-semibold text-white/80">R$&nbsp;{fmt(despesas)}</span>
+        </p>
       </div>
 
-      {/* Today status */}
       <div className="flex gap-2">
-        <div className={`flex-1 flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border text-sm font-medium ${
-          vendaHoje
-            ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200/80 dark:border-emerald-800/40 text-emerald-700 dark:text-emerald-400'
-            : 'bg-amber-50 dark:bg-amber-900/15 border-amber-200/80 dark:border-amber-800/40 text-amber-700 dark:text-amber-400'
-        }`}>
-          {vendaHoje
-            ? <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" fill="currentColor" opacity="0.2" /><polyline points="3.5,7 6,9.5 10.5,4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            : <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.5" /><line x1="7" y1="4" x2="7" y2="7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /><circle cx="7" cy="9.5" r="0.75" fill="currentColor" /></svg>
-          }
-          <span className="text-xs">Venda{vendaHoje ? ' registrada' : ' pendente'}</span>
-        </div>
-        <div className={`flex-1 flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border text-sm font-medium ${
-          caixaHoje
-            ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200/80 dark:border-emerald-800/40 text-emerald-700 dark:text-emerald-400'
-            : 'bg-amber-50 dark:bg-amber-900/15 border-amber-200/80 dark:border-amber-800/40 text-amber-700 dark:text-amber-400'
-        }`}>
-          {caixaHoje
-            ? <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" fill="currentColor" opacity="0.2" /><polyline points="3.5,7 6,9.5 10.5,4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            : <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.5" /><line x1="7" y1="4" x2="7" y2="7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /><circle cx="7" cy="9.5" r="0.75" fill="currentColor" /></svg>
-          }
-          <span className="text-xs">Caixa{caixaHoje ? ' fechado' : ' pendente'}</span>
-        </div>
+        {[
+          { ok: !!vendaHoje, label: vendaHoje ? 'Venda registrada' : 'Venda pendente' },
+          { ok: !!caixaHoje, label: caixaHoje ? 'Caixa fechado' : 'Caixa pendente' },
+        ].map(({ ok, label }) => (
+          <div key={label} className={`flex-1 flex items-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-medium ${
+            ok
+              ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200/80 dark:border-emerald-800/40 text-emerald-700 dark:text-emerald-400'
+              : 'bg-amber-50 dark:bg-amber-900/15 border-amber-200/80 dark:border-amber-800/40 text-amber-700 dark:text-amber-400'
+          }`}>
+            {ok
+              ? <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" fill="currentColor" opacity="0.2"/><polyline points="3.5,7 6,9.5 10.5,4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              : <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" strokeWidth="1.5"/><line x1="7" y1="4" x2="7" y2="7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><circle cx="7" cy="9.5" r="0.75" fill="currentColor"/></svg>
+            }
+            {label}
+          </div>
+        ))}
       </div>
 
-      {/* Pending accounts */}
+      <div>
+        <div className="flex items-center gap-3 mb-3">
+          <p className="font-mono text-[10px] tracking-[0.16em] uppercase text-mute">Semanas do mês</p>
+          <div className="flex items-center gap-2.5">
+            <span className="flex items-center gap-1 text-[10px] text-mute"><span className="w-2 h-2 rounded-sm bg-emerald-600 inline-block" /> Receita</span>
+            <span className="flex items-center gap-1 text-[10px] text-mute"><span className="w-2 h-2 rounded-sm bg-accent inline-block" /> Despesas</span>
+          </div>
+        </div>
+        <WeeklyBarChart data={weeklyData} />
+      </div>
+
       {pendentes.length > 0 && (
-        <div>
-          <div className="flex items-center justify-between mb-2.5">
-            <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500">
-              Contas Pendentes
-            </p>
-            <Link href="/fechamento" className="text-xs text-primary font-semibold hover:underline underline-offset-2">
-              Ver todas →
-            </Link>
+        <section>
+          <div className="flex items-center justify-between mb-2">
+            <p className="font-mono text-[10px] tracking-[0.16em] uppercase text-mute">Contas Pendentes</p>
+            <Link href="/fechamento" className="text-xs text-accent font-medium hover:underline underline-offset-2">Ver todas →</Link>
           </div>
           <div className="bg-white dark:bg-[#171411] rounded-2xl border border-cream-200 dark:border-white/[0.06] divide-y divide-cream-200 dark:divide-white/[0.04] overflow-hidden shadow-sm">
             {pendentes.map(c => (
@@ -125,55 +128,44 @@ export default async function HojePage() {
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{c.despesa}</p>
+                    <p className="text-sm font-medium text-ink dark:text-gray-100 truncate">{c.despesa}</p>
                     {c.diaVencimento && (
-                      <p className="text-xs text-gray-400 dark:text-zinc-500">Vence dia {c.diaVencimento}</p>
+                      <p className="font-mono text-[10px] text-mute">dia {c.diaVencimento}</p>
                     )}
                   </div>
                 </div>
-                <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 shrink-0 ml-3">
-                  R$ {fmt(c.valor)}
-                </p>
+                <p className="text-sm font-semibold text-ink dark:text-gray-100 shrink-0 ml-3">R$ {fmt(c.valor)}</p>
               </div>
             ))}
           </div>
-        </div>
+        </section>
       )}
 
-      {/* Recent registrations */}
       {recent.length > 0 && (
-        <div>
-          <div className="flex items-center justify-between mb-2.5">
-            <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500">
-              Gastos Recentes
-            </p>
-            <Link href="/gastos" className="text-xs text-primary font-semibold hover:underline underline-offset-2">
-              Ver todos →
-            </Link>
+        <section>
+          <div className="flex items-center justify-between mb-2">
+            <p className="font-mono text-[10px] tracking-[0.16em] uppercase text-mute">Gastos Recentes</p>
+            <Link href="/gastos" className="text-xs text-accent font-medium hover:underline underline-offset-2">Ver todos →</Link>
           </div>
           <div className="bg-white dark:bg-[#171411] rounded-2xl border border-cream-200 dark:border-white/[0.06] divide-y divide-cream-200 dark:divide-white/[0.04] overflow-hidden shadow-sm">
             {recent.map((item, i) => (
               <div key={i} className="flex items-center justify-between px-4 py-3.5">
                 <div className="flex items-center gap-3 min-w-0">
-                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${
+                  <span className={`font-mono text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${
                     item.tipo === 'insumo'
                       ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400'
-                      : 'bg-red-50 dark:bg-red-900/20 text-primary dark:text-red-400'
+                      : 'bg-red-50 dark:bg-red-900/20 text-accent dark:text-red-400'
                   }`}>
                     {item.tipo === 'insumo' ? 'Insumo' : 'Func.'}
                   </span>
-                  <p className="text-sm text-gray-700 dark:text-gray-300 truncate">{item.desc}</p>
+                  <p className="text-sm text-ink/80 dark:text-gray-300 truncate">{item.desc}</p>
                 </div>
-                <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 shrink-0 ml-3">
-                  R$ {fmt(item.valor)}
-                </p>
+                <p className="text-sm font-semibold text-ink dark:text-gray-100 shrink-0 ml-3">R$ {fmt(item.valor)}</p>
               </div>
             ))}
           </div>
-        </div>
+        </section>
       )}
-
-      <QuickAddFAB />
     </div>
   )
 }
