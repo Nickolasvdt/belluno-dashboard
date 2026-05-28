@@ -1,6 +1,7 @@
 :root {
   --color-ink:  #1C1917;
   --color-mute: #78716C;
+  --font-display: 'Bricolage Grotesque Variable';
 }
 .dark {
   --color-ink:  #F5F5F4;
