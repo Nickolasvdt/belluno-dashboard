@@ -20,7 +20,7 @@ type CashFlow = {
 function r2(n: number) { return Math.round(n * 100) / 100 }
 function fmt(v: number) { return v.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) }
 
-const inp = 'w-full px-3.5 py-2.5 border border-cream-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 dark:text-white rounded-xl text-sm placeholder:text-gray-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary/50 transition-all'
+const inp = 'w-full px-3.5 py-2.5 border border-cream-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 dark:text-white rounded-xl text-sm placeholder:text-gray-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-accent/30 focus:border-accent/50 transition-all'
 
 export default function CaixaPage() {
   const [registros, setRegistros] = useState<CashFlow[]>([])
@@ -112,10 +112,10 @@ export default function CaixaPage() {
               <p className="text-xs text-gray-400 dark:text-zinc-500 mb-0.5">
                 {format(parseISO(hoje.date.slice(0, 10)), "dd 'de' MMMM", { locale: ptBR })}
               </p>
-              <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500">Fechamento</p>
+              <p className="font-mono text-[10px] tracking-[0.14em] uppercase text-mute">Fechamento</p>
             </div>
             <button onClick={() => openEdit(hoje)}
-              className="text-xs text-primary font-semibold px-3 py-1.5 rounded-full border border-primary/30 hover:bg-primary/5 transition-colors">
+              className="text-xs text-accent font-semibold px-3 py-1.5 rounded-full border border-accent/30 hover:bg-accent/5 transition-colors">
               Editar
             </button>
           </div>
@@ -133,13 +133,13 @@ export default function CaixaPage() {
             </div>
             <div>
               <p className="text-[10px] text-gray-400 dark:text-zinc-500 uppercase tracking-wide mb-0.5">Saídas</p>
-              <p className="text-sm font-semibold text-primary">−{fmt(hoje.saidas)}</p>
+              <p className="text-sm font-semibold text-accent">−{fmt(hoje.saidas)}</p>
             </div>
           </div>
           {hoje.diferenca != null && (
             <div className="mt-3 pt-3 border-t border-cream-200 dark:border-white/[0.05] flex items-center justify-between">
               <p className="text-[10px] text-gray-400 dark:text-zinc-500 uppercase tracking-wide">Diferença</p>
-              <p className={`text-sm font-semibold ${hoje.diferenca >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-primary'}`}>
+              <p className={`text-sm font-semibold ${hoje.diferenca >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-accent'}`}>
                 {hoje.diferenca >= 0 ? '+' : ''}R$ {fmt(hoje.diferenca)}
               </p>
             </div>
@@ -152,7 +152,7 @@ export default function CaixaPage() {
         <div className="bg-white dark:bg-[#171411] rounded-2xl border border-dashed border-cream-300 dark:border-zinc-700 p-8 text-center shadow-sm">
           <p className="text-sm text-gray-400 dark:text-zinc-500 mb-3">Sem registro para hoje</p>
           <button onClick={openNew}
-            className="px-4 py-2 bg-primary text-white rounded-xl text-sm font-medium hover:bg-primary-dark transition-colors">
+            className="px-4 py-2 bg-accent text-white rounded-xl text-sm font-medium hover:bg-accent-dark transition-colors">
             Registrar agora
           </button>
         </div>
@@ -161,7 +161,7 @@ export default function CaixaPage() {
       {/* History */}
       {registros.length > (temHoje ? 1 : 0) && (
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-zinc-500 mb-2.5">Histórico</p>
+          <p className="font-mono text-[10px] tracking-[0.14em] uppercase text-mute mb-2.5">Histórico</p>
           <div className="bg-white dark:bg-[#171411] rounded-2xl border border-cream-200 dark:border-white/[0.06] divide-y divide-cream-200 dark:divide-white/[0.04] overflow-hidden shadow-sm">
             {registros.slice(temHoje ? 1 : 0, 20).map(r => {
               const confirming = deleteConfirm === r.id
@@ -180,7 +180,7 @@ export default function CaixaPage() {
                       <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
                         <span className="text-emerald-600 dark:text-emerald-400">+{fmt(r.entradas)}</span>
                         <span className="mx-1">·</span>
-                        <span className="text-primary">−{fmt(r.saidas)}</span>
+                        <span className="text-accent">−{fmt(r.saidas)}</span>
                       </p>
                     )}
                   </div>
@@ -204,7 +204,7 @@ export default function CaixaPage() {
                         </div>
                         <div className="flex flex-col gap-1">
                           <button onClick={() => openEdit(r)}
-                            className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-primary hover:bg-primary/5 transition-colors">
+                            className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-accent hover:bg-accent/5 transition-colors">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                               <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
                               <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
@@ -226,16 +226,6 @@ export default function CaixaPage() {
           </div>
         </div>
       )}
-
-      {/* FAB */}
-      <button
-        onClick={openNew}
-        className="fixed bottom-[5.5rem] right-4 md:bottom-6 md:right-6 w-14 h-14 bg-primary text-white rounded-full shadow-lg shadow-primary/30 flex items-center justify-center z-30 hover:bg-primary-dark transition-all active:scale-95"
-      >
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-          <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-        </svg>
-      </button>
 
       {/* Add/Edit sheet */}
       <BottomSheet open={open} onClose={() => setOpen(false)} title={editId ? 'Editar Registro' : 'Novo Registro de Caixa'}>
@@ -262,7 +252,7 @@ export default function CaixaPage() {
             <input type="text" value={observacao} onChange={e => setObservacao(e.target.value)} className={inp} />
           </div>
           <button type="submit" disabled={submitting}
-            className="w-full py-3 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-dark disabled:opacity-50 transition-all active:scale-[0.99] mt-1">
+            className="w-full py-3 bg-accent text-white rounded-xl text-sm font-semibold hover:bg-accent-dark disabled:opacity-50 transition-all active:scale-[0.99] mt-1">
             {submitting ? 'Salvando...' : 'Salvar'}
           </button>
         </form>
