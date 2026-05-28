@@ -11,14 +11,19 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans:    ['var(--font-dm-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        display: ['var(--font-playfair)', 'Georgia', 'serif'],
+        sans:    ['var(--font-geist-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['var(--font-display)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        mono:    ['var(--font-geist-mono)', 'ui-monospace',  'monospace'],
       },
       colors: {
-        primary:        "#8B2020",
-        "primary-dark": "#6B1515",
-        "primary-light":"#fdf0f0",
-        secondary:      "#fbbf24",
+        ink:           'var(--color-ink)',
+        mute:          'var(--color-mute)',
+        accent:        '#8B2020',
+        'accent-dark': '#6B1515',
+        primary:        '#8B2020',
+        'primary-dark': '#6B1515',
+        'primary-light':'#fdf0f0',
+        secondary:      '#fbbf24',
         cream: {
           50:  '#fefdf8',
           100: '#fdf9ef',
@@ -36,10 +41,7 @@ const config: Config = {
           600: '#482a22',
           700: '#2d1b16',
         },
-        gold: {
-          400: '#f59e0b',
-          500: '#d97706',
-        },
+        gold: { 400: '#f59e0b', 500: '#d97706' },
         gray: {
           50:  '#fafaf9',
           100: '#f5f5f4',

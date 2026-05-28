@@ -1,3 +1,12 @@
+:root {
+  --color-ink:  #1C1917;
+  --color-mute: #78716C;
+}
+.dark {
+  --color-ink:  #F5F5F4;
+  --color-mute: #A8A29E;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -110,5 +119,5 @@ input[type="number"] {
 
 /* ── Input base style ── */
 .inp {
-  @apply w-full px-3.5 py-2.5 border border-cream-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 dark:text-white rounded-xl text-sm placeholder:text-gray-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary/50 transition-all;
+  @apply w-full px-3.5 py-2.5 border border-cream-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 dark:text-white rounded-xl text-sm placeholder:text-gray-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-accent/30 focus:border-accent/50 transition-all;
 }
