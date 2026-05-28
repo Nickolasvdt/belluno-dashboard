@@ -16,14 +16,16 @@ type Conta      = { id: number; date: string; despesa: string; valor: number; pa
 function r2(n: number) { return Math.round(n * 100) / 100 }
 function fmt(v: number) { return v.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) }
 
-const inp = 'w-full px-3.5 py-2.5 border border-cream-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 dark:text-white rounded-xl text-sm placeholder:text-gray-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary/50 transition-all'
+const inp = 'w-full px-3.5 py-2.5 border border-cream-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 dark:text-white rounded-xl text-sm placeholder:text-gray-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-accent/30 focus:border-accent/50 transition-all'
 
-const TABS: { key: Tab; label: string }[] = [
-  { key: 'vendas',       label: 'Vendas' },
-  { key: 'funcionarios', label: 'Funcionários' },
-  { key: 'insumos',      label: 'Insumos' },
-  { key: 'contas',       label: 'Contas' },
-]
+function fmtK(v: number) {
+  return v.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  })
+}
 
 export default function MesPage() {
   const now = new Date()
@@ -88,6 +90,12 @@ export default function MesPage() {
   const resultado   = r2(receita - despesas)
   const totalPizzas = vendas.reduce((s, v) => s + v.pizzas, 0)
   const isPositive  = resultado >= 0
+  const tabs: { key: Tab; label: string; subtotal: string }[] = [
+    { key: 'vendas',       label: 'Vendas',       subtotal: fmtK(receita) },
+    { key: 'funcionarios', label: 'Func.',        subtotal: fmtK(totalFunc) },
+    { key: 'insumos',      label: 'Insumos',      subtotal: fmtK(totalInsumos) },
+    { key: 'contas',       label: 'Contas',       subtotal: fmtK(totalContas) },
+  ]
 
   function resetForm() {
     setDate(today)
@@ -97,8 +105,6 @@ export default function MesPage() {
     setDespesa(''); setPago(false); setDiaVenc('')
     setEditItem(null)
   }
-
-  function openAdd() { resetForm(); setOpen(true) }
 
   function openEdit(item: any) {
     resetForm(); setEditItem(item)
@@ -184,16 +190,16 @@ export default function MesPage() {
       </div>
 
       {/* Summary grid */}
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-4 gap-2">
         {[
-          { label: 'Receita Líq.', value: receita,   color: 'text-emerald-600 dark:text-emerald-400' },
-          { label: 'Despesas',     value: despesas,  color: 'text-primary' },
-          { label: 'Resultado',    value: resultado, color: isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-primary', prefix: isPositive ? '+' : '–' },
+          { label: 'Receita',      value: receita,   color: 'text-emerald-600 dark:text-emerald-400' },
+          { label: 'Gastos',       value: despesas,  color: 'text-accent' },
+          { label: 'Result.',      value: resultado, color: isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-accent', prefix: isPositive ? '+' : '–' },
           { label: 'Pizzas',       value: totalPizzas, color: 'text-gray-700 dark:text-gray-300', isInt: true },
         ].map(s => (
-          <div key={s.label} className="bg-white dark:bg-[#171411] rounded-xl border border-cream-200 dark:border-white/[0.06] p-3 shadow-sm">
-            <p className="text-[10px] text-gray-400 dark:text-zinc-500 uppercase tracking-wide mb-1">{s.label}</p>
-            <p className={`text-base font-bold ${s.color}`}>
+          <div key={s.label} className="bg-white dark:bg-[#171411] rounded-xl border border-cream-200 dark:border-white/[0.06] p-2.5 shadow-sm min-w-0">
+            <p className="font-mono text-[9px] text-mute uppercase tracking-wide mb-1 truncate">{s.label}</p>
+            <p className={`text-sm font-semibold ${s.color} truncate`}>
               {s.isInt
                 ? s.value
                 : `${'prefix' in s && s.prefix ? s.prefix + ' ' : ''}R$ ${fmt(Math.abs(s.value as number))}`
@@ -204,15 +210,16 @@ export default function MesPage() {
       </div>
 
       {/* Tab bar */}
-      <div className="flex bg-cream-100 dark:bg-zinc-900 rounded-xl p-1 gap-1">
-        {TABS.map(t => (
+      <div className="grid grid-cols-4 bg-cream-100 dark:bg-zinc-900 rounded-xl p-1 gap-1">
+        {tabs.map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
-            className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${
+            className={`min-w-0 py-2 rounded-lg transition-all ${
               tab === t.key
                 ? 'bg-white dark:bg-zinc-800 text-gray-800 dark:text-gray-100 shadow-sm'
                 : 'text-gray-500 dark:text-zinc-500 hover:text-gray-700 dark:hover:text-zinc-300'
             }`}>
-            {t.label}
+            <span className="block text-xs font-semibold truncate">{t.label}</span>
+            <span className="block font-mono text-[9px] mt-0.5 opacity-60 truncate">{t.subtotal}</span>
           </button>
         ))}
       </div>
@@ -262,7 +269,7 @@ export default function MesPage() {
                         ) : (
                           <>
                             <p className="text-sm font-bold text-gray-800 dark:text-gray-100">R$ {fmt(br)}</p>
-                            <button onClick={() => openEdit(v)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-primary hover:bg-primary/5 transition-colors">
+                            <button onClick={() => openEdit(v)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-accent hover:bg-accent/5 transition-colors">
                               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                             </button>
                             <button onClick={() => setDeleteConfirm(dkey)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
@@ -303,7 +310,7 @@ export default function MesPage() {
                         ) : (
                           <>
                             <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">R$ {fmt(f.valor)}</p>
-                            <button onClick={() => openEdit(f)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-primary hover:bg-primary/5 transition-colors">
+                            <button onClick={() => openEdit(f)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-accent hover:bg-accent/5 transition-colors">
                               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                             </button>
                             <button onClick={() => setDeleteConfirm(dkey)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
@@ -341,7 +348,7 @@ export default function MesPage() {
                         ) : (
                           <>
                             <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">R$ {fmt(i.valor)}</p>
-                            <button onClick={() => openEdit(i)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-primary hover:bg-primary/5 transition-colors">
+                            <button onClick={() => openEdit(i)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-accent hover:bg-accent/5 transition-colors">
                               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                             </button>
                             <button onClick={() => setDeleteConfirm(dkey)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
@@ -396,7 +403,7 @@ export default function MesPage() {
                         ) : (
                           <>
                             <p className={`text-sm font-semibold ${c.pago ? 'text-gray-400 dark:text-zinc-500' : 'text-gray-800 dark:text-gray-100'}`}>R$ {fmt(c.valor)}</p>
-                            <button onClick={() => openEdit(c)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-primary hover:bg-primary/5 transition-colors">
+                            <button onClick={() => openEdit(c)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-accent hover:bg-accent/5 transition-colors">
                               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                             </button>
                             <button onClick={() => setDeleteConfirm(dkey)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
@@ -411,16 +418,6 @@ export default function MesPage() {
           )}
         </div>
       )}
-
-      {/* FAB */}
-      <button
-        onClick={openAdd}
-        className="fixed bottom-[5.5rem] right-4 md:bottom-6 md:right-6 w-14 h-14 bg-primary text-white rounded-full shadow-lg shadow-primary/30 flex items-center justify-center z-30 hover:bg-primary-dark transition-all active:scale-95"
-      >
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-          <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-        </svg>
-      </button>
 
       {/* Form bottom sheet */}
       <BottomSheet open={open} onClose={() => { setOpen(false); resetForm() }} title={sheetTitle[tab]}>
@@ -497,7 +494,7 @@ export default function MesPage() {
                   <input type="number" value={diaVenc} onChange={e => setDiaVenc(e.target.value)} placeholder="15" min="1" max="31" className={inp} />
                 </div>
                 <div className="flex items-center gap-2 pt-6">
-                  <input type="checkbox" id="pago-mes" checked={pago} onChange={e => setPago(e.target.checked)} className="w-4 h-4 accent-primary" />
+                  <input type="checkbox" id="pago-mes" checked={pago} onChange={e => setPago(e.target.checked)} className="w-4 h-4 accent-[#8B2020]" />
                   <label htmlFor="pago-mes" className="text-sm text-gray-600 dark:text-gray-300 cursor-pointer">Já pago</label>
                 </div>
               </div>
@@ -505,7 +502,7 @@ export default function MesPage() {
           )}
 
           <button type="submit" disabled={submitting}
-            className="w-full py-3 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-dark disabled:opacity-50 transition-all active:scale-[0.99] mt-1">
+            className="w-full py-3 bg-accent text-white rounded-xl text-sm font-semibold hover:bg-accent-dark disabled:opacity-50 transition-all active:scale-[0.99] mt-1">
             {submitting ? 'Salvando...' : editItem ? 'Atualizar' : 'Salvar'}
           </button>
         </form>
