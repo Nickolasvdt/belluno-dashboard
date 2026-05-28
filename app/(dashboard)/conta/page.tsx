@@ -3,7 +3,7 @@
 import { useSession } from 'next-auth/react'
 import { useState } from 'react'
 
-const inputCls = 'w-full px-3.5 py-2.5 border border-cream-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 dark:text-white rounded-xl text-sm placeholder:text-gray-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary/50 transition-all'
+const inputCls = 'w-full px-3.5 py-2.5 border border-cream-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 dark:text-white rounded-xl text-sm placeholder:text-gray-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-accent/30 focus:border-accent/50 transition-all'
 const labelCls = 'block text-xs font-medium text-gray-500 dark:text-zinc-500 mb-1.5'
 
 export default function ContaPage() {
@@ -40,23 +40,22 @@ export default function ContaPage() {
 
   return (
     <div className="w-full max-w-md min-w-0">
-      <h2 className="text-xl font-display font-semibold text-gray-800 dark:text-gray-100 mb-5">Minha Conta</h2>
+      <h2 className="font-display font-semibold text-xl text-ink dark:text-gray-100 mb-5">Minha Conta</h2>
 
       <div className="bg-white dark:bg-[#171411] rounded-2xl border border-cream-200 dark:border-white/[0.06] shadow-sm p-5">
-        {/* User info */}
         <div className="mb-5 pb-4 border-b border-cream-200 dark:border-white/[0.05]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/10 dark:bg-primary/15 flex items-center justify-center text-primary font-bold text-sm shrink-0">
+            <div className="w-10 h-10 rounded-full bg-accent/10 dark:bg-accent/15 flex items-center justify-center text-accent font-bold text-sm shrink-0">
               {session?.user?.username?.[0]?.toUpperCase() ?? '?'}
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">{session?.user?.username}</p>
-              <p className="text-xs text-gray-400 dark:text-zinc-500 capitalize mt-0.5">{role?.toLowerCase()}</p>
+              <p className="text-sm font-semibold text-ink dark:text-gray-100">{session?.user?.username}</p>
+              <p className="font-mono text-[10px] text-mute capitalize mt-0.5">{role?.toLowerCase()}</p>
             </div>
           </div>
         </div>
 
-        <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-zinc-500 mb-4">Alterar Senha</p>
+        <p className="font-mono text-[10px] tracking-[0.14em] uppercase text-mute mb-4">Alterar Senha</p>
 
         {message && (
           <div className={`mb-4 px-3.5 py-2.5 rounded-xl text-sm border ${
@@ -84,7 +83,7 @@ export default function ContaPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 px-4 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-dark disabled:opacity-50 transition-all active:scale-[0.99]"
+            className="w-full py-3 px-4 bg-accent text-white rounded-xl text-sm font-semibold hover:bg-accent-dark disabled:opacity-50 transition-all active:scale-[0.99]"
           >
             {loading ? 'Salvando...' : 'Alterar Senha'}
           </button>
