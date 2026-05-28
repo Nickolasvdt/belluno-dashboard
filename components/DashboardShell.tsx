@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useTheme } from '@/context/ThemeContext'
 import BottomNav from './BottomNav'
+import QuickAddFAB from './QuickAddFAB'
 
 function SunIcon() {
   return (
@@ -101,19 +102,16 @@ export default function DashboardShell({ children }: { children: React.ReactNode
   return (
     <div className="flex h-dvh bg-[#faf9f6] dark:bg-[#0e0c0a]">
 
-      {/* ── Desktop sidebar ── */}
-      <aside className="hidden md:flex w-[204px] shrink-0 bg-white dark:bg-[#120f0c] border-r border-cream-200 dark:border-white/[0.05] flex-col">
-
-        {/* Brand */}
+      {/* Desktop sidebar */}
+      <aside className="hidden md:flex w-[200px] shrink-0 bg-white dark:bg-[#120f0c] border-r border-cream-200 dark:border-white/[0.05] flex-col">
         <div className="px-5 h-14 flex items-center gap-3 border-b border-cream-200 dark:border-white/[0.05] shrink-0">
-          <Image src="/belluno_logo.png" alt="Belluno" width={32} height={32} className="rounded-full shrink-0" unoptimized />
+          <Image src="/belluno_logo.png" alt="Belluno" width={30} height={30} className="rounded-full shrink-0" unoptimized />
           <div>
-            <p className="font-display font-bold text-[15px] text-primary leading-none tracking-tight">Belluno</p>
-            <p className="text-[10px] text-gray-400 dark:text-zinc-600 font-display italic mt-0.5">Pizzaria</p>
+            <p className="font-display font-semibold text-[15px] text-accent leading-none tracking-tight">Belluno</p>
+            <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-mute mt-0.5">Pizzaria</p>
           </div>
         </div>
 
-        {/* Nav */}
         <nav className="flex-1 px-2.5 py-3 space-y-px overflow-y-auto">
           {visible.map(({ href, label, icon }) => {
             const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href)
@@ -121,12 +119,12 @@ export default function DashboardShell({ children }: { children: React.ReactNode
               <Link key={href} href={href}
                 className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-all duration-150 relative ${
                   isActive
-                    ? 'bg-primary/[0.07] dark:bg-primary/[0.12] text-primary font-medium'
-                    : 'text-gray-500 dark:text-zinc-500 font-medium hover:text-gray-700 dark:hover:text-zinc-300 hover:bg-black/[0.03] dark:hover:bg-white/[0.04]'
+                    ? 'bg-accent/[0.07] dark:bg-accent/[0.12] text-accent font-medium'
+                    : 'text-mute dark:text-zinc-500 font-medium hover:text-ink dark:hover:text-zinc-300 hover:bg-black/[0.03] dark:hover:bg-white/[0.04]'
                 }`}
               >
                 {isActive && (
-                  <span className="absolute left-0 top-[8px] bottom-[8px] w-[2.5px] bg-primary rounded-r-full" />
+                  <span className="absolute left-0 top-[8px] bottom-[8px] w-[2.5px] bg-accent rounded-r-full" />
                 )}
                 {icon(isActive)}
                 <span>{label}</span>
@@ -135,28 +133,23 @@ export default function DashboardShell({ children }: { children: React.ReactNode
           })}
         </nav>
 
-        {/* User */}
         <div className="px-3 py-4 border-t border-cream-200 dark:border-white/[0.05] shrink-0 space-y-3">
           <div className="flex items-center gap-2.5 px-2">
-            <div className="w-7 h-7 rounded-full bg-primary/10 dark:bg-primary/15 flex items-center justify-center text-primary text-[11px] font-bold shrink-0">
+            <div className="w-7 h-7 rounded-full bg-accent/10 dark:bg-accent/15 flex items-center justify-center text-accent text-[11px] font-bold shrink-0">
               {initial}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-gray-700 dark:text-zinc-300 truncate leading-none">{session?.user?.username}</p>
-              <p className="text-[10px] text-gray-400 dark:text-zinc-600 capitalize mt-0.5">{role?.toLowerCase()}</p>
+              <p className="text-xs font-semibold text-ink dark:text-zinc-300 truncate leading-none">{session?.user?.username}</p>
+              <p className="font-mono text-[10px] text-mute capitalize mt-0.5">{role?.toLowerCase()}</p>
             </div>
           </div>
           <div className="flex items-center justify-between px-2">
-            <button
-              onClick={() => signOut({ callbackUrl: '/login' })}
-              className="text-xs text-gray-400 dark:text-zinc-600 hover:text-primary font-medium transition-colors"
-            >
+            <button onClick={() => signOut({ callbackUrl: '/login' })}
+              className="text-xs text-mute hover:text-accent font-medium transition-colors">
               Sair
             </button>
-            <button
-              onClick={toggle}
-              className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-zinc-600 hover:text-gray-600 dark:hover:text-zinc-400 transition-colors px-2 py-1.5 rounded-md hover:bg-black/[0.04] dark:hover:bg-white/[0.05]"
-            >
+            <button onClick={toggle}
+              className="flex items-center gap-1.5 text-xs text-mute hover:text-ink dark:hover:text-zinc-400 transition-colors px-2 py-1.5 rounded-md hover:bg-black/[0.04] dark:hover:bg-white/[0.05]">
               {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
               <span>{theme === 'dark' ? 'Claro' : 'Escuro'}</span>
             </button>
@@ -164,24 +157,22 @@ export default function DashboardShell({ children }: { children: React.ReactNode
         </div>
       </aside>
 
-      {/* ── Content area ── */}
+      {/* Content area */}
       <div className="flex-1 flex flex-col min-w-0 min-h-0">
 
         {/* Mobile header */}
         <header className="md:hidden flex items-center justify-between px-4 h-[52px] bg-white/90 dark:bg-[#120f0c]/90 backdrop-blur-md border-b border-cream-200 dark:border-white/[0.05] shrink-0 sticky top-0 z-30">
           <div className="flex items-center gap-2.5">
             <Image src="/belluno_logo.png" alt="Belluno" width={26} height={26} className="rounded-full" unoptimized />
-            <span className="font-display font-bold text-[14px] text-primary tracking-tight">Belluno</span>
+            <span className="font-display font-semibold text-[14px] text-accent tracking-tight">Belluno</span>
           </div>
           <div className="flex items-center gap-1">
-            <button
-              onClick={toggle}
-              className="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 dark:text-zinc-500 hover:bg-black/[0.05] dark:hover:bg-white/[0.07] transition-colors"
-            >
+            <button onClick={toggle}
+              className="w-8 h-8 flex items-center justify-center rounded-full text-mute hover:bg-black/[0.05] dark:hover:bg-white/[0.07] transition-colors">
               {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
             </button>
             <Link href="/conta"
-              className="w-8 h-8 flex items-center justify-center rounded-full bg-primary/10 dark:bg-primary/15 text-primary text-[11px] font-bold">
+              className="w-8 h-8 flex items-center justify-center rounded-full bg-accent/10 dark:bg-accent/15 text-accent text-[11px] font-bold">
               {initial}
             </Link>
           </div>
@@ -197,6 +188,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
           </div>
         </main>
 
+        <QuickAddFAB />
         <BottomNav />
       </div>
     </div>

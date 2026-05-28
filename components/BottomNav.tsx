@@ -13,16 +13,6 @@ function IconHoje({ active }: { active: boolean }) {
   )
 }
 
-function IconRegistro({ active }: { active: boolean }) {
-  return (
-    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="4" y="4" width="16" height="16" rx="3" fill={active ? 'currentColor' : 'none'} />
-      <line x1="12" y1="9" x2="12" y2="15" stroke={active ? 'white' : 'currentColor'} />
-      <line x1="9" y1="12" x2="15" y2="12" stroke={active ? 'white' : 'currentColor'} />
-    </svg>
-  )
-}
-
 function IconCaixa({ active }: { active: boolean }) {
   return (
     <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
@@ -42,6 +32,16 @@ function IconMes({ active }: { active: boolean }) {
   )
 }
 
+function IconGastos({ active }: { active: boolean }) {
+  return (
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="4" y="4" width="16" height="16" rx="3" fill={active ? 'currentColor' : 'none'} />
+      <line x1="12" y1="9" x2="12" y2="15" stroke={active ? 'white' : 'currentColor'} />
+      <line x1="9" y1="12" x2="15" y2="12" stroke={active ? 'white' : 'currentColor'} />
+    </svg>
+  )
+}
+
 function IconConta({ active }: { active: boolean }) {
   return (
     <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
@@ -52,10 +52,10 @@ function IconConta({ active }: { active: boolean }) {
 }
 
 const adminTabs = [
-  { href: '/',          label: 'Hoje',     Icon: IconHoje },
-  { href: '/gastos',    label: 'Registro', Icon: IconRegistro },
-  { href: '/caixa',     label: 'Caixa',    Icon: IconCaixa },
-  { href: '/fechamento',label: 'Mês',      Icon: IconMes },
+  { href: '/',           label: 'Hoje',   Icon: IconHoje },
+  { href: '/caixa',      label: 'Caixa',  Icon: IconCaixa },
+  { href: '/fechamento', label: 'Mês',    Icon: IconMes },
+  { href: '/gastos',     label: 'Gastos', Icon: IconGastos },
 ]
 
 const caixaTabs = [
@@ -77,18 +77,16 @@ export default function BottomNav() {
         {tabs.map(({ href, label, Icon }) => {
           const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href)
           return (
-            <Link
-              key={href}
-              href={href}
-              className={`flex-1 flex flex-col items-center justify-center py-3 gap-1 text-[10px] font-medium tracking-wide transition-colors relative ${
-                isActive ? 'text-primary' : 'text-gray-400 dark:text-zinc-600'
+            <Link key={href} href={href}
+              className={`flex-1 flex flex-col items-center justify-center py-3 gap-1 transition-colors relative ${
+                isActive ? 'text-accent' : 'text-mute dark:text-zinc-600'
               }`}
             >
               {isActive && (
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-5 h-[2px] bg-primary rounded-full" />
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-5 h-[2px] bg-accent rounded-full" />
               )}
               <Icon active={isActive} />
-              <span className="uppercase">{label}</span>
+              <span className="font-mono text-[9px] uppercase tracking-[0.12em]">{label}</span>
             </Link>
           )
         })}
