@@ -23,11 +23,11 @@ type Entrada = {
 function r2(n: number) { return Math.round(n * 100) / 100 }
 function fmt(v: number) { return v.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) }
 
-const inp = 'w-full px-3.5 py-2.5 border border-cream-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 dark:text-white rounded-xl text-sm placeholder:text-gray-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary/50 transition-all'
+const inp = 'w-full px-3.5 py-2.5 border border-cream-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 dark:text-white rounded-xl text-sm placeholder:text-gray-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-accent/30 focus:border-accent/50 transition-all'
 
 const tipoCls: Record<Tipo, string> = {
   insumo:      'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400',
-  funcionario: 'bg-red-50 dark:bg-red-900/20 text-primary dark:text-red-400',
+  funcionario: 'bg-red-50 dark:bg-red-900/20 text-accent dark:text-red-400',
   conta:       'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400',
 }
 const tipoLabel: Record<Tipo, string> = { insumo: 'Insumo', funcionario: 'Func.', conta: 'Conta' }
@@ -153,7 +153,7 @@ export default function RegistrosPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-lg font-display font-semibold text-gray-800 dark:text-gray-100">Registros</h1>
+      <h1 className="font-display font-semibold text-lg text-ink dark:text-gray-100">Registros</h1>
 
       {/* Period filter */}
       <div className="flex gap-1.5 flex-wrap">
@@ -161,8 +161,8 @@ export default function RegistrosPage() {
           <button key={opt.key} onClick={() => setFiltro(opt.key)}
             className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
               filtro === opt.key
-                ? 'bg-primary text-white'
-                : 'bg-white dark:bg-[#171411] border border-cream-200 dark:border-zinc-800 text-gray-500 dark:text-zinc-400 hover:border-primary/40 hover:text-primary'
+                ? 'bg-accent text-white'
+                : 'bg-white dark:bg-[#171411] border border-cream-200 dark:border-zinc-800 text-gray-500 dark:text-zinc-400 hover:border-accent/40 hover:text-accent'
             }`}>
             {opt.label}
           </button>
@@ -185,7 +185,7 @@ export default function RegistrosPage() {
 
       {/* Total + count */}
       <div className="flex items-baseline gap-1.5">
-        <span className="text-2xl font-display font-bold text-gray-800 dark:text-gray-100">R$ {fmt(total)}</span>
+        <span className="font-display font-semibold text-2xl text-ink dark:text-gray-100">R$ {fmt(total)}</span>
         <span className="text-xs text-gray-400 dark:text-zinc-500">{filtered.length} {filtered.length === 1 ? 'registro' : 'registros'}</span>
         {loading && <span className="text-xs text-gray-300 dark:text-zinc-700">•••</span>}
       </div>
@@ -202,7 +202,7 @@ export default function RegistrosPage() {
             const confirming = deleteConfirm === key
             return (
               <div key={key} className="flex items-center gap-3 px-4 py-3.5">
-                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${tipoCls[e.tipo]}`}>
+                <span className={`font-mono text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${tipoCls[e.tipo]}`}>
                   {tipoLabel[e.tipo]}
                 </span>
                 <div className="min-w-0 flex-1">
@@ -230,7 +230,7 @@ export default function RegistrosPage() {
                     <>
                       <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">R$ {fmt(e.valor)}</span>
                       <button onClick={() => openEdit(e)}
-                        className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-primary hover:bg-primary/5 transition-colors">
+                        className="w-7 h-7 flex items-center justify-center rounded-full text-gray-300 dark:text-zinc-700 hover:text-accent hover:bg-accent/5 transition-colors">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                           <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
                           <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
@@ -251,16 +251,6 @@ export default function RegistrosPage() {
         </div>
       )}
 
-      {/* FAB */}
-      <button
-        onClick={() => { reset(); setOpen(true) }}
-        className="fixed bottom-[5.5rem] right-4 md:bottom-6 md:right-6 w-14 h-14 bg-primary text-white rounded-full shadow-lg shadow-primary/30 flex items-center justify-center z-30 hover:bg-primary-dark transition-all active:scale-95"
-      >
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-          <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-        </svg>
-      </button>
-
       {/* Add/Edit bottom sheet */}
       <BottomSheet open={open} onClose={() => { setOpen(false); reset() }} title={editId ? 'Editar Registro' : 'Novo Registro'}>
         <div className="flex gap-1.5 mb-5 flex-wrap">
@@ -268,9 +258,9 @@ export default function RegistrosPage() {
             <button key={t} type="button" onClick={() => !editId && setTipo(t)}
               className={`px-3.5 py-1.5 rounded-full text-sm font-medium border transition-colors ${
                 tipo === t
-                  ? 'bg-primary text-white border-primary'
+                  ? 'bg-accent text-white border-accent'
                   : 'border-cream-200 dark:border-zinc-700 text-gray-500 dark:text-zinc-400'
-              } ${editId ? 'opacity-60 cursor-default' : 'hover:border-primary/50 hover:text-primary'}`}>
+              } ${editId ? 'opacity-60 cursor-default' : 'hover:border-accent/50 hover:text-accent'}`}>
               {tipoLabel[t] === 'Func.' ? 'Funcionário' : tipoLabel[t]}
             </button>
           ))}
@@ -305,14 +295,14 @@ export default function RegistrosPage() {
                 <input type="number" value={diaVenc} onChange={e => setDiaVenc(e.target.value)} placeholder="15" min="1" max="31" className={inp} />
               </div>
               <div className="flex items-center gap-2 pt-6">
-                <input type="checkbox" id="pago-r" checked={pago} onChange={e => setPago(e.target.checked)} className="w-4 h-4 accent-primary" />
+                <input type="checkbox" id="pago-r" checked={pago} onChange={e => setPago(e.target.checked)} className="w-4 h-4 accent-[#8B2020]" />
                 <label htmlFor="pago-r" className="text-sm text-gray-600 dark:text-gray-300 cursor-pointer">Já pago</label>
               </div>
             </div>
           )}
 
           <button type="submit" disabled={submitting || valor === 0}
-            className="w-full py-3 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-dark disabled:opacity-50 transition-all active:scale-[0.99] mt-1">
+            className="w-full py-3 bg-accent text-white rounded-xl text-sm font-semibold hover:bg-accent-dark disabled:opacity-50 transition-all active:scale-[0.99] mt-1">
             {submitting ? 'Salvando...' : editId ? 'Atualizar' : 'Salvar'}
           </button>
         </form>
