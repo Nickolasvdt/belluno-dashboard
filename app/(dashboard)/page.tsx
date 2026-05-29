@@ -2,8 +2,7 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { format, startOfMonth, endOfMonth, startOfDay, endOfDay } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+import { startOfMonth, endOfMonth, startOfDay, endOfDay } from 'date-fns'
 import Link from 'next/link'
 import WeeklyBarChart from '@/components/WeeklyBarChart'
 import type { WeekData } from '@/components/WeeklyBarChart'
@@ -47,12 +46,6 @@ export default async function HojePage() {
     .sort((a, b) => (a.diaVencimento ?? 99) - (b.diaVencimento ?? 99))
     .slice(0, 5)
 
-  type R = { tipo: 'insumo' | 'funcionario'; desc: string; valor: number; date: Date }
-  const recent: R[] = [
-    ...insumos.slice(0, 4).map(i => ({ tipo: 'insumo' as const, desc: i.fornecedor, valor: i.valor, date: i.date })),
-    ...funcionarios.slice(0, 3).map(f => ({ tipo: 'funcionario' as const, desc: f.nome, valor: f.valor, date: f.date })),
-  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 6)
-
   const weeklyData: WeekData[] = [1, 2, 3, 4].map(w => {
     const wVendas  = vendas.filter(v => weekOf(v.date) === w)
     const wInsumos = insumos.filter(i => weekOf(i.date) === w)
@@ -67,13 +60,10 @@ export default async function HojePage() {
     return { label: `S${w}`, receita: rec, despesas: desp }
   })
 
-  const mesLabel   = format(now, 'MMMM yyyy', { locale: ptBR })
   const isPositive = resultado >= 0
 
   return (
     <div className="space-y-5">
-      <p className="font-mono text-[10px] tracking-[0.16em] uppercase text-mute capitalize">{mesLabel}</p>
-
       <div className={`rounded-2xl p-5 ${isPositive ? 'bg-emerald-700' : 'bg-accent'}`}>
         <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-white/60 mb-1">Resultado do mês</p>
         <p className="font-display font-semibold text-[clamp(28px,6vw,38px)] tracking-tight text-white leading-none mb-2">
@@ -141,31 +131,6 @@ export default async function HojePage() {
         </section>
       )}
 
-      {recent.length > 0 && (
-        <section>
-          <div className="flex items-center justify-between mb-2">
-            <p className="font-mono text-[10px] tracking-[0.16em] uppercase text-mute">Gastos Recentes</p>
-            <Link href="/gastos" className="text-xs text-accent font-medium hover:underline underline-offset-2">Ver todos →</Link>
-          </div>
-          <div className="bg-white dark:bg-[#171411] rounded-2xl border border-cream-200 dark:border-white/[0.06] divide-y divide-cream-200 dark:divide-white/[0.04] overflow-hidden shadow-sm">
-            {recent.map((item, i) => (
-              <div key={i} className="flex items-center justify-between px-4 py-3.5">
-                <div className="flex items-center gap-3 min-w-0">
-                  <span className={`font-mono text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${
-                    item.tipo === 'insumo'
-                      ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400'
-                      : 'bg-red-50 dark:bg-red-900/20 text-accent dark:text-red-400'
-                  }`}>
-                    {item.tipo === 'insumo' ? 'Insumo' : 'Func.'}
-                  </span>
-                  <p className="text-sm text-ink/80 dark:text-gray-300 truncate">{item.desc}</p>
-                </div>
-                <p className="text-sm font-semibold text-ink dark:text-gray-100 shrink-0 ml-3">R$ {fmt(item.valor)}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
     </div>
   )
 }

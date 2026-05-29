@@ -55,7 +55,6 @@ const adminTabs = [
   { href: '/',           label: 'Hoje',   Icon: IconHoje },
   { href: '/caixa',      label: 'Caixa',  Icon: IconCaixa },
   { href: '/fechamento', label: 'Mês',    Icon: IconMes },
-  { href: '/gastos',     label: 'Gastos', Icon: IconGastos },
 ]
 
 const caixaTabs = [
