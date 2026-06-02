@@ -95,7 +95,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
       {/* Desktop sidebar */}
       <aside className="hidden md:flex w-[200px] shrink-0 bg-white dark:bg-[#120f0c] border-r border-cream-200 dark:border-white/[0.05] flex-col">
         <div className="px-5 h-14 flex items-center gap-3 border-b border-cream-200 dark:border-white/[0.05] shrink-0">
-          <Image src="/belluno_logo.png" alt="Belluno" width={30} height={30} className="rounded-full shrink-0" unoptimized />
+          <Image src="/logo.png" alt="Belluno" width={30} height={30} className="rounded-full shrink-0" unoptimized />
           <div>
             <p className="font-display font-semibold text-[15px] text-accent leading-none tracking-tight">Belluno</p>
             <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-mute mt-0.5">Pizzaria</p>
@@ -153,7 +153,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
         {/* Mobile header */}
         <header className="md:hidden flex items-center justify-between px-4 h-[52px] bg-white/90 dark:bg-[#120f0c]/90 backdrop-blur-md border-b border-cream-200 dark:border-white/[0.05] shrink-0 sticky top-0 z-30">
           <div className="flex items-center gap-2.5">
-            <Image src="/belluno_logo.png" alt="Belluno" width={26} height={26} className="rounded-full" unoptimized />
+            <Image src="/logo.png" alt="Belluno" width={26} height={26} className="rounded-full" unoptimized />
             <span className="font-display font-semibold text-[14px] text-accent tracking-tight">Belluno</span>
           </div>
           <div className="flex items-center gap-1">

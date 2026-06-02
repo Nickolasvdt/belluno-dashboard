@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 type Props = {
   open: boolean
@@ -10,13 +11,19 @@ type Props = {
 }
 
 export default function BottomSheet({ open, onClose, title, children }: Props) {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => { setMounted(true) }, [])
+
   useEffect(() => {
     if (open) document.body.style.overflow = 'hidden'
     else document.body.style.overflow = ''
     return () => { document.body.style.overflow = '' }
   }, [open])
 
-  return (
+  if (!mounted) return null
+
+  return createPortal(
     <div className={`fixed inset-0 z-50 ${open ? '' : 'pointer-events-none'}`}>
       {/* Backdrop */}
       <div
@@ -71,6 +78,7 @@ export default function BottomSheet({ open, onClose, title, children }: Props) {
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }

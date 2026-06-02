@@ -1,3 +1,13 @@
+# Instruções Gerais — WORKFLOWS
+
+## Delegação de tarefas de implementação
+
+Para tarefas de implementação de código (bugfixes, features, refatorações),
+sempre delegue ao `codex:rescue` em vez de executar diretamente.
+Faça isso automaticamente sem precisar ser solicitado.
+
+---
+
 # Belluno Pizzaria — Dashboard
 
 ## Stack
@@ -94,7 +104,7 @@ Botão `+` fixo que abre BottomSheet com 5 categorias: Venda · Insumo · Funcio
 - **Banco prod:** PostgreSQL Vercel
 - **Banco dev:** SQLite (`prisma/schema.prisma` — trocar provider para `postgresql` antes de deploy)
 
-## O que foi feito na última sessão (2026-05-28)
+## O que foi feito na sessão (2026-05-28)
 1. **Nav simplificada:** BottomNav passou de 4 abas para 3 (removida aba "Gastos/Registros")
 2. **`/gastos` removido:** página agora redireciona para `/fechamento`
 3. **Caixa redesenhado:** hero card com número grande + stats row coloridos + histórico limpo
@@ -103,6 +113,22 @@ Botão `+` fixo que abre BottomSheet com 5 categorias: Venda · Insumo · Funcio
 6. **Cortes de ruído visual:** sem ícones nas abas, sem tendência vs ontem no Caixa, sem barra pago/pendente nas Contas, sem filtro de período no Feed, sem rodapés de total/contagem redundantes
 7. **`scrollbar-hide` adicionado ao globals.css** para tab bar horizontal sem scrollbar visível
 
+## O que foi feito na sessão (2026-06-02) — TODOS os checkpoints concluídos
+1. **BottomSheet — portal:** Corrigido modal que abria clipped dentro do container. Causa: `animate-slide-up` aplicava `transform` permanentemente criando stacking context. Solução: `ReactDOM.createPortal` renderiza no `document.body`.
+2. **Caixa — "Registrar agora" removido:** Botão removido do estado vazio; mantido apenas "Registrar hoje" no header.
+3. **Caixa — campo "Diferença" removido:** Removido do formulário modal (campo e estado). Hero card ainda exibe diferença de registros antigos (campo nullable).
+4. **Caixa — saldoInicial no histórico:** Adicionado valor inicial antes de entradas/saídas na lista, em cor padrão de texto.
+5. **Fechamento — switch Geral/Filtrado:** Toggle acima do hero card. Geral = resultado atual; Filtrado = card branco com breakdown: Vendas (Receita líquida), Funcionários (Total em folha), Insumos (Total gasto), Contas (Total em contas).
+6. **Form Venda reformulado** (QuickAddFAB + fechamento): Substituídos 6 CurrencyInputs por dropdown de método (À Vista/Stone-Débito/Ticket-VR-Alelo/PIX/iFood) + Valor (obrigatório) + Desconto→taxas + Entrega→outros + Nome→observacao. Cálculo: Bruto = valor+entrega, Líquido = bruto−desconto.
+7. **Validação de obrigatórios:** canSubmit calculado explicitamente em todos os forms. QuickAddFAB: por cat. Fechamento: por activeTab. Caixa: date !== ''.
+
+## Mapeamento dos campos de Venda (pós-reformulação)
+- `avista/debito/credito/pix/ifood` → apenas o campo do método selecionado recebe o valor; os demais ficam 0
+- `outros` → entrega (taxa de entrega/frete)
+- `taxas` → desconto
+- `pizzas` → sempre 0 (removido do form)
+- `observacao` → nome do cliente / observação livre
+
 ## Próximos pontos em aberto
-- Revisar experiência do QuickAddFAB para manter consistência com novo design
 - Validar comportamento em mobile real (iOS safe-area-inset)
+- Deploy: git push para master ativa auto-deploy no Vercel

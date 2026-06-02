@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation'
 import BottomSheet from './BottomSheet'
 import CurrencyInput from './CurrencyInput'
 
-type Cat = 'venda' | 'insumo' | 'funcionario' | 'conta' | 'caixa'
+type Cat    = 'venda' | 'insumo' | 'funcionario' | 'conta' | 'caixa'
+type Metodo = 'avista' | 'debito' | 'credito' | 'pix' | 'ifood'
 
 function r2(n: number) { return Math.round(n * 100) / 100 }
 
@@ -42,26 +43,24 @@ export default function QuickAddFAB() {
   const [submitting, setSubmitting] = useState(false)
 
   const today = format(new Date(), 'yyyy-MM-dd')
-  const [date, setDate] = useState(today)
+  const [date, setDate]           = useState(today)
   const [descricao, setDescricao] = useState('')
-  const [valor, setValor] = useState(0)
-  const [semana, setSemana] = useState('')
-  const [pago, setPago] = useState(false)
+  const [valor, setValor]         = useState(0)
+  const [semana, setSemana]       = useState('')
+  const [pago, setPago]           = useState(false)
   const [diaVencimento, setDiaVencimento] = useState('')
-  const [avista, setAvista] = useState(0)
-  const [debito, setDebito] = useState(0)
-  const [credito, setCredito] = useState(0)
-  const [pix, setPix] = useState(0)
-  const [ifood, setIfood] = useState(0)
-  const [outros, setOutros] = useState(0)
-  const [taxas, setTaxas] = useState(0)
-  const [pizzas, setPizzas] = useState(0)
+
+  // Venda
+  const [metodo, setMetodo]   = useState<Metodo>('avista')
+  const [desconto, setDesconto] = useState(0)
+  const [entrega, setEntrega] = useState(0)
   const [obsVenda, setObsVenda] = useState('')
+
+  // Caixa
   const [saldoInicial, setSaldoInicial] = useState(0)
-  const [entradas, setEntradas] = useState(0)
-  const [saidas, setSaidas] = useState(0)
-  const [diferenca, setDiferenca] = useState('')
-  const [obsCaixa, setObsCaixa] = useState('')
+  const [entradas, setEntradas]         = useState(0)
+  const [saidas, setSaidas]             = useState(0)
+  const [obsCaixa, setObsCaixa]         = useState('')
 
   useEffect(() => {
     if (cat === 'caixa') {
@@ -78,9 +77,8 @@ export default function QuickAddFAB() {
     setCat(null)
     setDate(format(new Date(), 'yyyy-MM-dd'))
     setDescricao(''); setValor(0); setSemana(''); setPago(false); setDiaVencimento('')
-    setAvista(0); setDebito(0); setCredito(0); setPix(0); setIfood(0); setOutros(0)
-    setTaxas(0); setPizzas(0); setObsVenda('')
-    setSaldoInicial(0); setEntradas(0); setSaidas(0); setDiferenca(''); setObsCaixa('')
+    setMetodo('avista'); setDesconto(0); setEntrega(0); setObsVenda('')
+    setSaldoInicial(0); setEntradas(0); setSaidas(0); setObsCaixa('')
   }
 
   function openModal() { reset(); setOpen(true) }
@@ -90,7 +88,22 @@ export default function QuickAddFAB() {
     setSubmitting(true)
     try {
       if (cat === 'venda') {
-        await fetch('/api/fechamento/vendas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date, avista, debito, credito, pix, ifood, outros, taxas, pizzas, observacao: obsVenda }) })
+        await fetch('/api/fechamento/vendas', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            date,
+            avista:  metodo === 'avista'  ? valor : 0,
+            debito:  metodo === 'debito'  ? valor : 0,
+            credito: metodo === 'credito' ? valor : 0,
+            pix:     metodo === 'pix'     ? valor : 0,
+            ifood:   metodo === 'ifood'   ? valor : 0,
+            outros:  entrega,
+            taxas:   desconto,
+            pizzas:  0,
+            observacao: obsVenda,
+          })
+        })
       } else if (cat === 'insumo') {
         await fetch('/api/fechamento/insumos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date, fornecedor: descricao, valor }) })
       } else if (cat === 'funcionario') {
@@ -99,15 +112,22 @@ export default function QuickAddFAB() {
         await fetch('/api/fechamento/contas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date, despesa: descricao, valor, pago, diaVencimento: diaVencimento ? parseInt(diaVencimento) : null }) })
       } else if (cat === 'caixa') {
         const fechamento = r2(saldoInicial + entradas - saidas)
-        await fetch('/api/caixa', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date, saldoInicial, entradas, saidas, fechamento, diferenca: diferenca !== '' ? parseFloat(diferenca) : null, observacao: obsCaixa }) })
+        await fetch('/api/caixa', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date, saldoInicial, entradas, saidas, fechamento, observacao: obsCaixa }) })
       }
       reset(); setOpen(false); router.refresh()
     } finally { setSubmitting(false) }
   }
 
-  const brutoVenda = r2(avista + debito + credito + pix + ifood + outros)
+  const brutoVenda = r2(valor + entrega)
   const fechamentoCaixa = r2(saldoInicial + entradas - saidas)
-  const canSubmit = cat !== null && (cat === 'venda' || cat === 'caixa' || valor > 0)
+
+  const canSubmit = cat !== null && (
+    (cat === 'venda' && valor > 0) ||
+    (cat === 'caixa') ||
+    (cat === 'insumo' && descricao.trim() !== '' && valor > 0) ||
+    (cat === 'funcionario' && descricao.trim() !== '' && valor > 0) ||
+    (cat === 'conta' && descricao.trim() !== '' && valor > 0)
+  )
 
   return (
     <>
@@ -189,31 +209,21 @@ export default function QuickAddFAB() {
             {cat === 'venda' && (
               <div className="space-y-3.5">
                 <div>
-                  <p className="font-mono text-[10px] tracking-[0.14em] uppercase text-mute mb-2">Recebimentos</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    <CurrencyInput label="À Vista"             value={avista}  onChange={setAvista} />
-                    <CurrencyInput label="Stone / Débito"      value={debito}  onChange={setDebito} />
-                    <CurrencyInput label="Ticket / VR / Alelo" value={credito} onChange={setCredito} />
-                    <CurrencyInput label="PIX (Tuna)"          value={pix}     onChange={setPix} />
-                  </div>
+                  <label className="text-xs font-medium text-mute dark:text-zinc-500 mb-1.5 block">Método de pagamento</label>
+                  <select value={metodo} onChange={e => setMetodo(e.target.value as Metodo)} className={inp}>
+                    <option value="avista">À Vista</option>
+                    <option value="debito">Stone / Débito</option>
+                    <option value="credito">Ticket / VR / Alelo</option>
+                    <option value="pix">PIX</option>
+                    <option value="ifood">iFood</option>
+                  </select>
                 </div>
+                <CurrencyInput label="Valor" value={valor} onChange={setValor} required />
+                <CurrencyInput label="Desconto (opcional)" value={desconto} onChange={setDesconto} />
+                <CurrencyInput label="Entrega (opcional)" value={entrega} onChange={setEntrega} />
                 <div>
-                  <p className="font-mono text-[10px] tracking-[0.14em] uppercase text-mute mb-2">Delivery</p>
-                  <div className="grid grid-cols-2 gap-3">
-                    <CurrencyInput label="iFood"         value={ifood}  onChange={setIfood} />
-                    <CurrencyInput label="99Food / Keeta" value={outros} onChange={setOutros} />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <CurrencyInput label="Taxas" value={taxas} onChange={setTaxas} />
-                  <div>
-                    <label className="text-xs font-medium text-mute dark:text-zinc-500 mb-1.5 block">Pizzas</label>
-                    <input type="number" value={pizzas || ''} onChange={e => setPizzas(parseInt(e.target.value) || 0)} placeholder="0" className={inp} />
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-mute dark:text-zinc-500 mb-1.5 block">Observação</label>
-                  <input type="text" value={obsVenda} onChange={e => setObsVenda(e.target.value)} placeholder="Ex: Fechado, feriado..." className={inp} />
+                  <label className="text-xs font-medium text-mute dark:text-zinc-500 mb-1.5 block">Nome (opcional)</label>
+                  <input type="text" value={obsVenda} onChange={e => setObsVenda(e.target.value)} placeholder="Nome do cliente ou observação" className={inp} />
                 </div>
                 <div className="flex justify-between items-center px-3.5 py-3 bg-cream-100 dark:bg-zinc-800/60 rounded-xl">
                   <div>
@@ -223,7 +233,7 @@ export default function QuickAddFAB() {
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-mute"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
                   <div className="text-right">
                     <p className="font-mono text-[10px] uppercase tracking-wide text-mute">Líquido</p>
-                    <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">R$ {r2(brutoVenda - taxas).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                    <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">R$ {r2(brutoVenda - desconto).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
                   </div>
                 </div>
               </div>
@@ -237,11 +247,6 @@ export default function QuickAddFAB() {
                 <div className="flex justify-between items-center px-3.5 py-3 bg-cream-100 dark:bg-zinc-800/60 rounded-xl">
                   <p className="text-sm font-medium text-mute dark:text-zinc-400">Fechamento calculado</p>
                   <p className="text-base font-semibold text-ink dark:text-gray-100">R$ {fechamentoCaixa.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-mute dark:text-zinc-500 mb-1.5 block">Diferença (opcional)</label>
-                  <input type="number" step="0.01" value={diferenca} onChange={e => setDiferenca(e.target.value)} placeholder="0,00" className={inp} />
-                  <p className="font-mono text-[10px] text-mute mt-1">Diferença entre caixa físico e fechamento calculado</p>
                 </div>
                 <div>
                   <label className="text-xs font-medium text-mute dark:text-zinc-500 mb-1.5 block">Observação</label>

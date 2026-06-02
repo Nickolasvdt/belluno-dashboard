@@ -35,7 +35,6 @@ export default function CaixaPage() {
   const [saldoInicial, setSaldoInicial] = useState(0)
   const [entradas, setEntradas] = useState(0)
   const [saidas, setSaidas] = useState(0)
-  const [diferenca, setDiferenca] = useState('')
   const [observacao, setObservacao] = useState('')
 
   useEffect(() => { carregar() }, [])
@@ -52,7 +51,7 @@ export default function CaixaPage() {
     setEditId(null)
     setDate(today)
     setSaldoInicial(registros[0]?.fechamento ?? 0)
-    setEntradas(0); setSaidas(0); setDiferenca(''); setObservacao('')
+    setEntradas(0); setSaidas(0); setObservacao('')
     setOpen(true)
   }
 
@@ -62,7 +61,6 @@ export default function CaixaPage() {
     setSaldoInicial(r.saldoInicial)
     setEntradas(r.entradas)
     setSaidas(r.saidas)
-    setDiferenca(r.diferenca != null ? String(r.diferenca) : '')
     setObservacao(r.observacao ?? '')
     setOpen(true)
   }
@@ -71,7 +69,7 @@ export default function CaixaPage() {
     e.preventDefault()
     setSubmitting(true)
     try {
-      const body = { date, saldoInicial, entradas, saidas, diferenca: diferenca !== '' ? diferenca : null, observacao }
+      const body = { date, saldoInicial, entradas, saidas, observacao }
       if (editId) {
         await fetch(`/api/caixa/${editId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
       } else {
@@ -91,6 +89,7 @@ export default function CaixaPage() {
   const fechamentoCalc = r2(saldoInicial + entradas - saidas)
   const hoje = registros[0]
   const temHoje = hoje && hoje.date.slice(0, 10) === today
+  const canSubmit = date.trim() !== ''
 
   if (loading) return (
     <div className="space-y-4">
@@ -166,11 +165,7 @@ export default function CaixaPage() {
         </div>
       ) : (
         <div className="bg-white dark:bg-[#171411] rounded-2xl border border-dashed border-cream-300 dark:border-zinc-700 p-8 text-center shadow-sm">
-          <p className="text-sm text-gray-500 dark:text-zinc-400 mb-4">Sem fechamento para hoje</p>
-          <button onClick={openNew}
-            className="px-5 py-2.5 bg-accent text-white rounded-xl text-sm font-semibold hover:bg-accent-dark transition-colors active:scale-[0.98]">
-            Registrar agora
-          </button>
+          <p className="text-sm text-gray-500 dark:text-zinc-400">Sem fechamento para hoje</p>
         </div>
       )}
 
@@ -204,6 +199,8 @@ export default function CaixaPage() {
                           {format(parseISO(r.date.slice(0, 10)), "dd/MM/yyyy", { locale: ptBR })}
                         </p>
                         <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
+                          <span className="text-gray-500 dark:text-zinc-400">{fmt(r.saldoInicial)}</span>
+                          <span className="mx-1 text-gray-300 dark:text-zinc-700">·</span>
                           <span className="text-emerald-600 dark:text-emerald-400">+{fmt(r.entradas)}</span>
                           <span className="mx-1 text-gray-300 dark:text-zinc-700">·</span>
                           <span className="text-accent">−{fmt(r.saidas)}</span>
@@ -251,15 +248,10 @@ export default function CaixaPage() {
             <p className="text-lg font-display font-bold text-gray-800 dark:text-gray-100">R$&nbsp;{fmt(fechamentoCalc)}</p>
           </div>
           <div>
-            <label className="text-xs font-medium text-gray-500 dark:text-zinc-500 mb-1.5 block">Diferença (opcional)</label>
-            <input type="number" step="0.01" value={diferenca} onChange={e => setDiferenca(e.target.value)}
-              placeholder="Diferença entre caixa físico e calculado" className={inp} />
-          </div>
-          <div>
             <label className="text-xs font-medium text-gray-500 dark:text-zinc-500 mb-1.5 block">Observação (opcional)</label>
             <input type="text" value={observacao} onChange={e => setObservacao(e.target.value)} className={inp} />
           </div>
-          <button type="submit" disabled={submitting}
+          <button type="submit" disabled={submitting || !canSubmit}
             className="w-full py-3 bg-accent text-white rounded-xl text-sm font-semibold hover:bg-accent-dark disabled:opacity-50 transition-all active:scale-[0.99] mt-1">
             {submitting ? 'Salvando...' : editId ? 'Atualizar' : 'Salvar'}
           </button>

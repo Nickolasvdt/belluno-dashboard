@@ -8,6 +8,7 @@ import CurrencyInput from '@/components/CurrencyInput'
 
 type Tab     = 'feed' | 'vendas' | 'funcionarios' | 'insumos' | 'contas'
 type FeedCat = 'todos' | 'insumo' | 'funcionario' | 'conta'
+type Metodo  = 'avista' | 'debito' | 'credito' | 'pix' | 'ifood'
 
 type Venda       = { id: number; date: string; avista: number; debito: number; credito: number; pix: number; ifood: number; outros: number; taxas: number; pizzas: number; observacao?: string | null }
 type Funcionario = { id: number; date: string; nome: string; semana?: string | null; valor: number }
@@ -77,6 +78,7 @@ export default function MesPage() {
   const [editItem, setEditItem] = useState<any>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [feedCat, setFeedCat] = useState<FeedCat>('todos')
+  const [viewMode, setViewMode] = useState<'geral' | 'filtrado'>('geral')
 
   const mes = ref.getMonth() + 1
   const ano = ref.getFullYear()
@@ -91,15 +93,8 @@ export default function MesPage() {
   const today = format(now, 'yyyy-MM-dd')
   const [submitting, setSubmitting] = useState(false)
   const [date, setDate]             = useState(today)
-  const [avista, setAvista]         = useState(0)
-  const [debito, setDebito]         = useState(0)
-  const [credito, setCredito]       = useState(0)
-  const [pix, setPix]               = useState(0)
-  const [ifood, setIfood]           = useState(0)
-  const [outros, setOutros]         = useState(0)
-  const [taxas, setTaxas]           = useState(0)
-  const [pizzas, setPizzas]         = useState(0)
-  const [obsVenda, setObsVenda]     = useState('')
+  const [metodo, setMetodo]         = useState<Metodo>('avista')
+  const [desconto, setDesconto]     = useState(0)
   const [nome, setNome]             = useState('')
   const [semana, setSemana]         = useState('')
   const [valor, setValor]           = useState(0)
@@ -107,6 +102,8 @@ export default function MesPage() {
   const [despesa, setDespesa]       = useState('')
   const [pago, setPago]             = useState(false)
   const [diaVenc, setDiaVenc]       = useState('')
+  const [outros, setOutros]         = useState(0)
+  const [obsVenda, setObsVenda]     = useState('')
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
@@ -156,7 +153,7 @@ export default function MesPage() {
 
   function resetForm() {
     setDate(today)
-    setAvista(0); setDebito(0); setCredito(0); setPix(0); setIfood(0); setOutros(0); setTaxas(0); setPizzas(0); setObsVenda('')
+    setMetodo('avista'); setDesconto(0); setOutros(0); setObsVenda('')
     setNome(''); setSemana(''); setValor(0); setFornecedor('')
     setDespesa(''); setPago(false); setDiaVenc('')
     setEditItem(null)
@@ -166,9 +163,16 @@ export default function MesPage() {
     resetForm(); setEditItem(item)
     setDate(item.date?.slice(0, 10) ?? today)
     if (tab === 'vendas') {
-      setAvista(item.avista ?? 0); setDebito(item.debito ?? 0); setCredito(item.credito ?? 0)
-      setPix(item.pix ?? 0); setIfood(item.ifood ?? 0); setOutros(item.outros ?? 0)
-      setTaxas(item.taxas ?? 0); setPizzas(item.pizzas ?? 0); setObsVenda(item.observacao ?? '')
+      const fields: [Metodo, number][] = [
+        ['avista', item.avista], ['debito', item.debito], ['credito', item.credito],
+        ['pix', item.pix], ['ifood', item.ifood],
+      ]
+      const dominant = fields.reduce((a, b) => b[1] > a[1] ? b : a)
+      setMetodo(dominant[0])
+      setValor(dominant[1])
+      setDesconto(item.taxas ?? 0)
+      setOutros(item.outros ?? 0)
+      setObsVenda(item.observacao ?? '')
     } else if (tab === 'funcionarios') {
       setNome(item.nome ?? ''); setSemana(item.semana ?? ''); setValor(item.valor ?? 0)
     } else if (tab === 'insumos') {
@@ -202,7 +206,21 @@ export default function MesPage() {
       const method = editItem ? 'PUT' : 'POST'
       if (activeTab === 'vendas') {
         const url = editItem ? `/api/fechamento/vendas/${editItem.id}` : '/api/fechamento/vendas'
-        await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date, avista, debito, credito, pix, ifood, outros, taxas, pizzas, observacao: obsVenda }) })
+        await fetch(url, {
+          method, headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            date,
+            avista:  metodo === 'avista'  ? valor : 0,
+            debito:  metodo === 'debito'  ? valor : 0,
+            credito: metodo === 'credito' ? valor : 0,
+            pix:     metodo === 'pix'     ? valor : 0,
+            ifood:   metodo === 'ifood'   ? valor : 0,
+            outros,
+            taxas:   desconto,
+            pizzas:  0,
+            observacao: obsVenda,
+          })
+        })
       } else if (activeTab === 'funcionarios' || activeTab === 'funcionario') {
         const url = editItem ? `/api/fechamento/funcionarios/${editItem.id}` : '/api/fechamento/funcionarios'
         await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ date, nome, semana, valor }) })
@@ -239,7 +257,14 @@ export default function MesPage() {
     fetchAll()
   }
 
-  const brutoVenda = avista + debito + credito + pix + ifood + outros
+  const activeTabForSubmit = tab === 'feed' ? (editItem?.tipo ?? '') : tab
+  const canSubmitForm = (() => {
+    if (activeTabForSubmit === 'vendas') return valor > 0
+    if (activeTabForSubmit === 'funcionarios' || activeTabForSubmit === 'funcionario') return nome.trim() !== '' && valor > 0
+    if (activeTabForSubmit === 'insumos' || activeTabForSubmit === 'insumo') return fornecedor.trim() !== '' && valor > 0
+    if (activeTabForSubmit === 'contas' || activeTabForSubmit === 'conta') return despesa.trim() !== '' && valor > 0
+    return false
+  })()
 
   const sheetTitle: Record<string, string> = {
     feed:         editItem ? `Editar ${editItem.tipo === 'insumo' ? 'Insumo' : editItem.tipo === 'funcionario' ? 'Funcionário' : 'Conta'}` : 'Novo Registro',
@@ -273,29 +298,74 @@ export default function MesPage() {
         </button>
       </div>
 
-      {/* Hero resultado */}
-      <div className={`rounded-2xl p-5 ${loading ? 'bg-gray-100 dark:bg-zinc-900' : isPositive ? 'bg-emerald-700' : 'bg-accent'}`}>
-        {loading ? (
-          <div className="space-y-2">
-            <div className="skeleton h-4 w-24 rounded" />
-            <div className="skeleton h-9 w-40 rounded" />
-            <div className="skeleton h-3 w-32 rounded mt-2" />
+      {/* Hero resultado com switch Geral / Filtrado */}
+      <div>
+        <div className="flex gap-1 mb-2.5">
+          {(['geral', 'filtrado'] as const).map(mode => (
+            <button
+              key={mode}
+              onClick={() => setViewMode(mode)}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all ${
+                viewMode === mode
+                  ? 'bg-gray-800 dark:bg-zinc-200 text-white dark:text-zinc-900'
+                  : 'text-gray-500 dark:text-zinc-500 hover:text-gray-700 dark:hover:text-zinc-300'
+              }`}
+            >
+              {mode}
+            </button>
+          ))}
+        </div>
+
+        {viewMode === 'geral' ? (
+          <div className={`rounded-2xl p-5 ${loading ? 'bg-gray-100 dark:bg-zinc-900' : isPositive ? 'bg-emerald-700' : 'bg-accent'}`}>
+            {loading ? (
+              <div className="space-y-2">
+                <div className="skeleton h-4 w-24 rounded" />
+                <div className="skeleton h-9 w-40 rounded" />
+                <div className="skeleton h-3 w-32 rounded mt-2" />
+              </div>
+            ) : (
+              <>
+                <p className="font-mono text-[10px] uppercase tracking-widest text-white/60 mb-1">Resultado do mês</p>
+                <p className="font-display font-bold text-[clamp(30px,6vw,40px)] leading-none tracking-tight text-white mb-3">
+                  {isPositive ? '+' : '–'}&nbsp;R$&nbsp;{fmt(Math.abs(resultado))}
+                </p>
+                <p className="text-xs text-white/70">
+                  Receita <span className="font-semibold text-white">R$ {fmt(receita)}</span>
+                  <span className="mx-2 text-white/30">·</span>
+                  Despesas <span className="font-semibold text-white/85">R$ {fmt(despesas)}</span>
+                  {totalPizzas > 0 && (
+                    <><span className="mx-2 text-white/30">·</span><span className="font-semibold text-white">{totalPizzas}</span> pizzas</>
+                  )}
+                </p>
+              </>
+            )}
           </div>
         ) : (
-          <>
-            <p className="font-mono text-[10px] uppercase tracking-widest text-white/60 mb-1">Resultado do mês</p>
-            <p className="font-display font-bold text-[clamp(30px,6vw,40px)] leading-none tracking-tight text-white mb-3">
-              {isPositive ? '+' : '–'}&nbsp;R$&nbsp;{fmt(Math.abs(resultado))}
-            </p>
-            <p className="text-xs text-white/70">
-              Receita <span className="font-semibold text-white">R$ {fmt(receita)}</span>
-              <span className="mx-2 text-white/30">·</span>
-              Despesas <span className="font-semibold text-white/85">R$ {fmt(despesas)}</span>
-              {totalPizzas > 0 && (
-                <><span className="mx-2 text-white/30">·</span><span className="font-semibold text-white">{totalPizzas}</span> pizzas</>
-              )}
-            </p>
-          </>
+          <div className="bg-white dark:bg-[#171411] rounded-2xl border border-cream-200 dark:border-white/[0.06] shadow-sm overflow-hidden">
+            {loading ? (
+              <div className="p-5 space-y-3">{[1,2,3,4].map(i => <div key={i} className="skeleton h-10 rounded-lg"/>)}</div>
+            ) : (
+              <div className="divide-y divide-cream-200 dark:divide-white/[0.04]">
+                {[
+                  { label: 'Vendas',       sub: 'Receita líquida', value: receita,      positive: true  },
+                  { label: 'Funcionários', sub: 'Total em folha',  value: totalFunc,    positive: false },
+                  { label: 'Insumos',      sub: 'Total gasto',     value: totalInsumos, positive: false },
+                  { label: 'Contas',       sub: 'Total em contas', value: totalContas,  positive: false },
+                ].map(row => (
+                  <div key={row.label} className="flex items-center justify-between px-5 py-3.5">
+                    <div>
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{row.label}</p>
+                      <p className="font-mono text-[10px] uppercase tracking-widest text-gray-400 dark:text-zinc-500 mt-0.5">{row.sub}</p>
+                    </div>
+                    <p className={`text-sm font-bold ${row.positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-accent'}`}>
+                      R$ {fmt(row.value)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         )}
       </div>
 
@@ -317,7 +387,6 @@ export default function MesPage() {
       {/* ── FEED ── */}
       {tab === 'feed' && (
         <div className="space-y-3">
-          {/* Filtro de categoria */}
           <div className="flex gap-1 flex-wrap">
             {([['todos', 'Todos'], ['insumo', 'Insumo'], ['funcionario', 'Func.'], ['conta', 'Conta']] as [FeedCat, string][]).map(([key, label]) => (
               <button key={key} onClick={() => setFeedCat(key)}
@@ -398,7 +467,7 @@ export default function MesPage() {
                     </p>
                     {!confirming && v.taxas > 0 && (
                       <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
-                        bruto R$ {fmt(br)} · taxas R$ {fmt(v.taxas)}
+                        bruto R$ {fmt(br)} · desconto R$ {fmt(v.taxas)}
                       </p>
                     )}
                     {!confirming && v.observacao && (
@@ -571,31 +640,31 @@ export default function MesPage() {
           {/* Vendas */}
           {tab === 'vendas' && (
             <div className="space-y-3.5">
-              <div className="grid grid-cols-2 gap-3">
-                <CurrencyInput label="À Vista"              value={avista}  onChange={setAvista}  />
-                <CurrencyInput label="Stone / Débito"       value={debito}  onChange={setDebito}  />
-                <CurrencyInput label="Ticket / VR / Alelo"  value={credito} onChange={setCredito} />
-                <CurrencyInput label="PIX (Tuna)"           value={pix}     onChange={setPix}     />
-                <CurrencyInput label="iFood"                value={ifood}   onChange={setIfood}   />
-                <CurrencyInput label="99Food / Keeta"       value={outros}  onChange={setOutros}  />
-                <CurrencyInput label="Taxas"                value={taxas}   onChange={setTaxas}   />
-                <div>
-                  <label className="text-xs font-medium text-gray-500 dark:text-zinc-500 mb-1.5 block">Pizzas</label>
-                  <input type="number" value={pizzas || ''} onChange={e => setPizzas(parseInt(e.target.value) || 0)} placeholder="0" className={inp} />
-                </div>
-              </div>
               <div>
-                <label className="text-xs font-medium text-gray-500 dark:text-zinc-500 mb-1.5 block">Observação</label>
-                <input type="text" value={obsVenda} onChange={e => setObsVenda(e.target.value)} placeholder="Ex: Fechado, feriado..." className={inp} />
+                <label className="text-xs font-medium text-gray-500 dark:text-zinc-500 mb-1.5 block">Método de pagamento</label>
+                <select value={metodo} onChange={e => setMetodo(e.target.value as Metodo)} className={inp}>
+                  <option value="avista">À Vista</option>
+                  <option value="debito">Stone / Débito</option>
+                  <option value="credito">Ticket / VR / Alelo</option>
+                  <option value="pix">PIX</option>
+                  <option value="ifood">iFood</option>
+                </select>
+              </div>
+              <CurrencyInput label="Valor" value={valor} onChange={setValor} required />
+              <CurrencyInput label="Desconto (opcional)" value={desconto} onChange={setDesconto} />
+              <CurrencyInput label="Entrega (opcional)" value={outros} onChange={setOutros} />
+              <div>
+                <label className="text-xs font-medium text-gray-500 dark:text-zinc-500 mb-1.5 block">Nome (opcional)</label>
+                <input type="text" value={obsVenda} onChange={e => setObsVenda(e.target.value)} placeholder="Nome do cliente ou observação" className={inp} />
               </div>
               <div className="px-4 py-3 bg-cream-100 dark:bg-zinc-800/60 rounded-xl flex items-center justify-between">
                 <div>
                   <p className="text-[10px] text-gray-400 mb-0.5">Bruto</p>
-                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">R$ {fmt(r2(brutoVenda))}</p>
+                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">R$ {fmt(r2(valor + outros))}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-[10px] text-gray-400 mb-0.5">Líquido</p>
-                  <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">R$ {fmt(r2(brutoVenda - taxas))}</p>
+                  <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">R$ {fmt(r2(valor + outros - desconto))}</p>
                 </div>
               </div>
             </div>
@@ -674,7 +743,7 @@ export default function MesPage() {
             </>
           )}
 
-          <button type="submit" disabled={submitting}
+          <button type="submit" disabled={submitting || !canSubmitForm}
             className="w-full py-3 bg-accent text-white rounded-xl text-sm font-semibold hover:bg-accent-dark disabled:opacity-50 transition-all active:scale-[0.99] mt-1">
             {submitting ? 'Salvando...' : editItem ? 'Atualizar' : 'Salvar'}
           </button>
