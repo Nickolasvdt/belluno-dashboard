@@ -372,44 +372,44 @@ export default function MesPage() {
       </div>
 
       {/* Abas */}
-      <div className="flex items-center gap-2">
-        <div className="flex gap-1 overflow-x-auto scrollbar-hide flex-1 min-w-0">
-          {tabs.map(t => (
-            <button key={t.key} onClick={() => setTab(t.key)}
-              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl whitespace-nowrap transition-all shrink-0 ${
-                tab === t.key
-                  ? 'bg-white dark:bg-[#171411] text-gray-800 dark:text-gray-100 shadow-sm border border-cream-200 dark:border-white/[0.06]'
-                  : 'text-gray-500 dark:text-zinc-500 hover:text-gray-700 dark:hover:text-zinc-300'
-              }`}>
-              <span className="text-xs font-semibold">{t.label}</span>
-              <span className={`font-mono text-[9px] ${tab === t.key ? 'text-gray-400 dark:text-zinc-500' : 'opacity-40'}`}>{t.subtotal}</span>
-            </button>
-          ))}
-        </div>
-        <button
-          onClick={() => { resetForm(); setOpen(true) }}
-          className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-accent text-white hover:bg-accent-dark transition-all active:scale-95 shadow-sm shadow-accent/20"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-        </button>
+      <div className="flex gap-1 overflow-x-auto scrollbar-hide">
+        {tabs.map(t => (
+          <button key={t.key} onClick={() => setTab(t.key)}
+            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl whitespace-nowrap transition-all shrink-0 ${
+              tab === t.key
+                ? 'bg-white dark:bg-[#171411] text-gray-800 dark:text-gray-100 shadow-sm border border-cream-200 dark:border-white/[0.06]'
+                : 'text-gray-500 dark:text-zinc-500 hover:text-gray-700 dark:hover:text-zinc-300'
+            }`}>
+            <span className="text-xs font-semibold">{t.label}</span>
+            <span className={`font-mono text-[9px] ${tab === t.key ? 'text-gray-400 dark:text-zinc-500' : 'opacity-40'}`}>{t.subtotal}</span>
+          </button>
+        ))}
       </div>
 
       {/* ── FEED ── */}
       {tab === 'feed' && (
         <div className="space-y-3">
-          <div className="flex gap-1 flex-wrap">
-            {([['todos', 'Todos'], ['insumo', 'Insumo'], ['funcionario', 'Func.'], ['conta', 'Conta']] as [FeedCat, string][]).map(([key, label]) => (
-              <button key={key} onClick={() => setFeedCat(key)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
-                  feedCat === key
-                    ? 'bg-gray-800 dark:bg-zinc-200 text-white dark:text-zinc-900 border-gray-800 dark:border-zinc-200'
-                    : 'bg-white dark:bg-[#171411] border-cream-200 dark:border-zinc-800 text-gray-500 dark:text-zinc-400 hover:border-gray-400'
-                }`}>
-                {label}
-              </button>
-            ))}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex gap-1 flex-wrap">
+              {([['todos', 'Todos'], ['insumo', 'Insumo'], ['funcionario', 'Func.'], ['conta', 'Conta']] as [FeedCat, string][]).map(([key, label]) => (
+                <button key={key} onClick={() => setFeedCat(key)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                    feedCat === key
+                      ? 'bg-gray-800 dark:bg-zinc-200 text-white dark:text-zinc-900 border-gray-800 dark:border-zinc-200'
+                      : 'bg-white dark:bg-[#171411] border-cream-200 dark:border-zinc-800 text-gray-500 dark:text-zinc-400 hover:border-gray-400'
+                  }`}>
+                  {label}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => { resetForm(); setOpen(true) }}
+              className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full bg-accent text-white hover:bg-accent-dark transition-all active:scale-95 shadow-sm shadow-accent/20"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </button>
           </div>
 
           {loading ? (
@@ -452,6 +452,21 @@ export default function MesPage() {
               })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Botão adicionar — abas não-feed */}
+      {tab !== 'feed' && (
+        <div className="flex justify-end">
+          <button
+            onClick={() => { resetForm(); setOpen(true) }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-accent text-white hover:bg-accent-dark transition-all active:scale-95"
+          >
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Adicionar
+          </button>
         </div>
       )}
 
