@@ -201,7 +201,8 @@ export default function MesPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setSubmitting(true)
-    const activeTab = tab === 'feed' ? (editItem?.tipo ?? 'insumo') : tab
+    const feedType = editItem?.tipo ?? (feedCat === 'funcionario' ? 'funcionario' : feedCat === 'conta' ? 'conta' : 'insumo')
+    const activeTab = tab === 'feed' ? feedType : tab
     try {
       const method = editItem ? 'PUT' : 'POST'
       if (activeTab === 'vendas') {
@@ -257,7 +258,8 @@ export default function MesPage() {
     fetchAll()
   }
 
-  const activeTabForSubmit = tab === 'feed' ? (editItem?.tipo ?? '') : tab
+  const feedTypeForSubmit = editItem?.tipo ?? (feedCat === 'funcionario' ? 'funcionario' : feedCat === 'conta' ? 'conta' : 'insumo')
+  const activeTabForSubmit = tab === 'feed' ? feedTypeForSubmit : tab
   const canSubmitForm = (() => {
     if (activeTabForSubmit === 'vendas') return valor > 0
     if (activeTabForSubmit === 'funcionarios' || activeTabForSubmit === 'funcionario') return nome.trim() !== '' && valor > 0
@@ -267,7 +269,7 @@ export default function MesPage() {
   })()
 
   const sheetTitle: Record<string, string> = {
-    feed:         editItem ? `Editar ${editItem.tipo === 'insumo' ? 'Insumo' : editItem.tipo === 'funcionario' ? 'Funcionário' : 'Conta'}` : 'Novo Registro',
+    feed:         editItem ? `Editar ${editItem.tipo === 'insumo' ? 'Insumo' : editItem.tipo === 'funcionario' ? 'Funcionário' : 'Conta'}` : feedCat === 'funcionario' ? 'Novo Funcionário' : feedCat === 'conta' ? 'Nova Conta' : 'Novo Insumo',
     vendas:       editItem ? 'Editar Venda'       : 'Nova Venda',
     funcionarios: editItem ? 'Editar Funcionário' : 'Novo Funcionário',
     insumos:      editItem ? 'Editar Insumo'      : 'Novo Insumo',
@@ -370,18 +372,28 @@ export default function MesPage() {
       </div>
 
       {/* Abas */}
-      <div className="flex gap-1 overflow-x-auto scrollbar-hide">
-        {tabs.map(t => (
-          <button key={t.key} onClick={() => setTab(t.key)}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl whitespace-nowrap transition-all shrink-0 ${
-              tab === t.key
-                ? 'bg-white dark:bg-[#171411] text-gray-800 dark:text-gray-100 shadow-sm border border-cream-200 dark:border-white/[0.06]'
-                : 'text-gray-500 dark:text-zinc-500 hover:text-gray-700 dark:hover:text-zinc-300'
-            }`}>
-            <span className="text-xs font-semibold">{t.label}</span>
-            <span className={`font-mono text-[9px] ${tab === t.key ? 'text-gray-400 dark:text-zinc-500' : 'opacity-40'}`}>{t.subtotal}</span>
-          </button>
-        ))}
+      <div className="flex items-center gap-2">
+        <div className="flex gap-1 overflow-x-auto scrollbar-hide flex-1 min-w-0">
+          {tabs.map(t => (
+            <button key={t.key} onClick={() => setTab(t.key)}
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl whitespace-nowrap transition-all shrink-0 ${
+                tab === t.key
+                  ? 'bg-white dark:bg-[#171411] text-gray-800 dark:text-gray-100 shadow-sm border border-cream-200 dark:border-white/[0.06]'
+                  : 'text-gray-500 dark:text-zinc-500 hover:text-gray-700 dark:hover:text-zinc-300'
+              }`}>
+              <span className="text-xs font-semibold">{t.label}</span>
+              <span className={`font-mono text-[9px] ${tab === t.key ? 'text-gray-400 dark:text-zinc-500' : 'opacity-40'}`}>{t.subtotal}</span>
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={() => { resetForm(); setOpen(true) }}
+          className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-accent text-white hover:bg-accent-dark transition-all active:scale-95 shadow-sm shadow-accent/20"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
       </div>
 
       {/* ── FEED ── */}
@@ -697,7 +709,7 @@ export default function MesPage() {
           )}
 
           {/* Contas */}
-          {(tab === 'contas' || (tab === 'feed' && editItem?.tipo === 'conta')) && (
+          {(tab === 'contas' || (tab === 'feed' && (editItem?.tipo === 'conta' || (!editItem && feedCat === 'conta')))) && (
             <>
               <div>
                 <label className="text-xs font-medium text-gray-500 dark:text-zinc-500 mb-1.5 block">Despesa</label>
@@ -717,19 +729,19 @@ export default function MesPage() {
             </>
           )}
 
-          {/* Feed edit — insumo */}
-          {tab === 'feed' && editItem?.tipo === 'insumo' && (
+          {/* Feed — insumo (edição e novo) */}
+          {tab === 'feed' && (editItem?.tipo === 'insumo' || (!editItem && (feedCat === 'insumo' || feedCat === 'todos'))) && (
             <>
               <div>
                 <label className="text-xs font-medium text-gray-500 dark:text-zinc-500 mb-1.5 block">Fornecedor</label>
-                <input type="text" required value={fornecedor} onChange={e => setFornecedor(e.target.value)} className={inp} />
+                <input type="text" required value={fornecedor} onChange={e => setFornecedor(e.target.value)} placeholder="PMG, Sacolão, CristauLat..." className={inp} />
               </div>
               <CurrencyInput label="Valor" value={valor} onChange={setValor} required />
             </>
           )}
 
-          {/* Feed edit — funcionário */}
-          {tab === 'feed' && editItem?.tipo === 'funcionario' && (
+          {/* Feed — funcionário (edição e novo) */}
+          {tab === 'feed' && (editItem?.tipo === 'funcionario' || (!editItem && feedCat === 'funcionario')) && (
             <>
               <div>
                 <label className="text-xs font-medium text-gray-500 dark:text-zinc-500 mb-1.5 block">Nome</label>
