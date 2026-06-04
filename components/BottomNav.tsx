@@ -32,6 +32,16 @@ function IconMes({ active }: { active: boolean }) {
   )
 }
 
+function IconSemana({ active }: { active: boolean }) {
+  return (
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="12" width="4" height="9" rx="1" fill={active ? 'currentColor' : 'none'} />
+      <rect x="9" y="7" width="4" height="14" rx="1" fill={active ? 'currentColor' : 'none'} />
+      <rect x="16" y="3" width="4" height="18" rx="1" fill={active ? 'currentColor' : 'none'} />
+    </svg>
+  )
+}
+
 function IconGastos({ active }: { active: boolean }) {
   return (
     <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
@@ -53,12 +63,12 @@ function IconConta({ active }: { active: boolean }) {
 
 const adminTabs = [
   { href: '/',           label: 'Hoje',   Icon: IconHoje },
-  { href: '/caixa',      label: 'Caixa',  Icon: IconCaixa },
   { href: '/fechamento', label: 'Mês',    Icon: IconMes },
+  { href: '/semana',     label: 'Semana', Icon: IconSemana },
 ]
 
 const caixaTabs = [
-  { href: '/caixa', label: 'Caixa', Icon: IconCaixa },
+  { href: '/',     label: 'Hoje',  Icon: IconHoje },
   { href: '/conta', label: 'Conta', Icon: IconConta },
 ]
 
