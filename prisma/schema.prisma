@@ -92,3 +92,26 @@ model Insumo {
 
   @@index([date])
 }
+
+model FechamentoDia {
+  id        Int      @id @default(autoincrement())
+  date      DateTime @unique
+  avista    Float    @default(0)
+  ifood     Float    @default(0)
+  noventa9  Float    @default(0)
+  keeta     Float    @default(0)
+  extra     Float    @default(0)
+  pizzas    Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([date])
+}
+
+model Colaborador {
+  id        Int      @id @default(autoincrement())
+  nome      String   @unique
+  ativo     Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
