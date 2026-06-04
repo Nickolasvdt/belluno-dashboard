@@ -199,16 +199,21 @@ export default function QuickAddFAB() {
               <>
                 <div>
                   <label className="text-xs font-medium text-mute dark:text-zinc-500 mb-1.5 block">Funcionário</label>
-                  <select
-                    required value={descricao}
-                    onChange={e => setDescricao(e.target.value)}
-                    className={inp}
-                  >
-                    <option value="">Selecionar funcionário...</option>
-                    {colaboradores.map(c => (
-                      <option key={c.id} value={c.nome}>{c.nome}</option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      required value={descricao}
+                      onChange={e => setDescricao(e.target.value)}
+                      className={`${inp} appearance-none pr-10`}
+                    >
+                      <option value="">Selecionar funcionário...</option>
+                      {colaboradores.map(c => (
+                        <option key={c.id} value={c.nome}>{c.nome}</option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-mute dark:text-zinc-500">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6,9 12,15 18,9"/></svg>
+                    </div>
+                  </div>
                 </div>
                 <CurrencyInput label="Valor" value={valor} onChange={setValor} required />
               </>
@@ -238,13 +243,18 @@ export default function QuickAddFAB() {
               <div className="space-y-3.5">
                 <div>
                   <label className="text-xs font-medium text-mute dark:text-zinc-500 mb-1.5 block">Método de pagamento</label>
-                  <select value={metodo} onChange={e => setMetodo(e.target.value as Metodo)} className={inp}>
-                    <option value="avista">À Vista</option>
-                    <option value="debito">Stone / Débito</option>
-                    <option value="credito">Ticket / VR / Alelo</option>
-                    <option value="pix">PIX</option>
-                    <option value="ifood">iFood</option>
-                  </select>
+                  <div className="relative">
+                    <select value={metodo} onChange={e => setMetodo(e.target.value as Metodo)} className={`${inp} appearance-none pr-10`}>
+                      <option value="avista">À Vista</option>
+                      <option value="debito">Stone / Débito</option>
+                      <option value="credito">Ticket / VR / Alelo</option>
+                      <option value="pix">PIX</option>
+                      <option value="ifood">iFood</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-mute dark:text-zinc-500">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6,9 12,15 18,9"/></svg>
+                    </div>
+                  </div>
                 </div>
                 <CurrencyInput label="Valor" value={valor} onChange={setValor} required />
                 <CurrencyInput label="Desconto (opcional)" value={desconto} onChange={setDesconto} />

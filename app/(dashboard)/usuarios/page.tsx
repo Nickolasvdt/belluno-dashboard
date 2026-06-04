@@ -21,7 +21,7 @@ export default async function UsuariosPage() {
         <h2 className="font-display font-semibold text-xl text-ink dark:text-gray-100 mb-5">Usuários</h2>
         <div className="bg-white dark:bg-[#171411] rounded-2xl border border-cream-200 dark:border-white/[0.06] shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-[480px] divide-y divide-cream-200 dark:divide-white/[0.04]">
+            <table className="w-full min-w-[480px] divide-y divide-cream-200 dark:divide-white/[0.04]">
               <thead className="bg-cream-50 dark:bg-zinc-900/60">
                 <tr>
                   <th className="px-5 py-3 text-left font-mono text-[10px] text-mute uppercase tracking-[0.14em]">Usuário</th>

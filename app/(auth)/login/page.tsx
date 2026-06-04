@@ -36,7 +36,7 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <div className="flex justify-center mb-5">
             <div className="w-[68px] h-[68px] rounded-full overflow-hidden ring-[3px] ring-cream-200 dark:ring-white/[0.07] shadow-md">
-              <Image src="/logo.png" alt="Belluno" width={68} height={68} unoptimized />
+              <Image src="/logo.png" alt="Belluno" width={68} height={68} className="w-full h-full object-cover" unoptimized />
             </div>
           </div>
           <h1 className="font-display font-semibold text-[28px] text-gray-900 dark:text-gray-50 tracking-tight leading-none">
