@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import ColaboradoresSection from '@/components/ColaboradoresSection'
 
 export default async function UsuariosPage() {
   const session = await getServerSession(authOptions)
@@ -15,42 +16,46 @@ export default async function UsuariosPage() {
   })
 
   return (
-    <div className="min-w-0">
-      <h2 className="font-display font-semibold text-xl text-ink dark:text-gray-100 mb-5">Usuários</h2>
-      <div className="bg-white dark:bg-[#171411] rounded-2xl border border-cream-200 dark:border-white/[0.06] shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-[480px] divide-y divide-cream-200 dark:divide-white/[0.04]">
-            <thead className="bg-cream-50 dark:bg-zinc-900/60">
-              <tr>
-                <th className="px-5 py-3 text-left font-mono text-[10px] text-mute uppercase tracking-[0.14em]">Usuário</th>
-                <th className="px-5 py-3 text-left font-mono text-[10px] text-mute uppercase tracking-[0.14em]">Perfil</th>
-                <th className="px-5 py-3 text-left font-mono text-[10px] text-mute uppercase tracking-[0.14em]">Último login</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-cream-200 dark:divide-white/[0.04]">
-              {users.map((user) => (
-                <tr key={user.id} className="hover:bg-cream-50/60 dark:hover:bg-white/[0.02] transition-colors">
-                  <td className="px-5 py-4 text-sm font-medium text-ink dark:text-gray-100">{user.username}</td>
-                  <td className="px-5 py-4">
-                    <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
-                      user.role === 'ADMIN'
-                        ? 'bg-accent/10 dark:bg-accent/15 text-accent'
-                        : 'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400'
-                    }`}>
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className="px-5 py-4 text-sm text-mute dark:text-zinc-500 whitespace-nowrap">
-                    {user.lastLogin
-                      ? format(new Date(user.lastLogin), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })
-                      : 'Nunca'}
-                  </td>
+    <div className="min-w-0 space-y-8">
+      <div>
+        <h2 className="font-display font-semibold text-xl text-ink dark:text-gray-100 mb-5">Usuários</h2>
+        <div className="bg-white dark:bg-[#171411] rounded-2xl border border-cream-200 dark:border-white/[0.06] shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-[480px] divide-y divide-cream-200 dark:divide-white/[0.04]">
+              <thead className="bg-cream-50 dark:bg-zinc-900/60">
+                <tr>
+                  <th className="px-5 py-3 text-left font-mono text-[10px] text-mute uppercase tracking-[0.14em]">Usuário</th>
+                  <th className="px-5 py-3 text-left font-mono text-[10px] text-mute uppercase tracking-[0.14em]">Perfil</th>
+                  <th className="px-5 py-3 text-left font-mono text-[10px] text-mute uppercase tracking-[0.14em]">Último login</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-cream-200 dark:divide-white/[0.04]">
+                {users.map((user) => (
+                  <tr key={user.id} className="hover:bg-cream-50/60 dark:hover:bg-white/[0.02] transition-colors">
+                    <td className="px-5 py-4 text-sm font-medium text-ink dark:text-gray-100">{user.username}</td>
+                    <td className="px-5 py-4">
+                      <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
+                        user.role === 'ADMIN'
+                          ? 'bg-accent/10 dark:bg-accent/15 text-accent'
+                          : 'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400'
+                      }`}>
+                        {user.role}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4 text-sm text-mute dark:text-zinc-500 whitespace-nowrap">
+                      {user.lastLogin
+                        ? format(new Date(user.lastLogin), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })
+                        : 'Nunca'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
+
+      <ColaboradoresSection />
     </div>
   )
 }
