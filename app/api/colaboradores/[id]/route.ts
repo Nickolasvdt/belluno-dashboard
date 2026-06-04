@@ -7,8 +7,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   const session = await getServerSession(authOptions)
   if (!session || session.user.role !== 'ADMIN')
     return NextResponse.json({ error: 'Nao autorizado' }, { status: 403 })
+  const id = parseInt(params.id)
   try {
-    const id = parseInt(params.id)
     const body = await request.json()
     const data: { nome?: string; ativo?: boolean } = {}
     if (body.nome !== undefined) data.nome = body.nome.trim()
