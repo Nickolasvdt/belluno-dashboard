@@ -119,7 +119,10 @@ export default function HojeAdmin() {
   const cxFechamento = r2(cxSaldoInicial + cxEntradas - cxSaidas)
 
   return (
-    <div className="space-y-5">
+    <div className="md:grid md:grid-cols-2 md:gap-5 space-y-5 md:space-y-0">
+
+      {/* Coluna esquerda — Fechamento + Caixa */}
+      <div className="space-y-5">
 
       {/* Bloco 1 — Fechamento do Dia */}
       <div className="bg-white dark:bg-[#171411] rounded-2xl border border-cream-200 dark:border-white/[0.06] overflow-hidden shadow-sm">
@@ -236,13 +239,18 @@ export default function HojeAdmin() {
         )}
       </div>
 
+      </div>{/* fim coluna esquerda */}
+
+      {/* Coluna direita — Resultado + Gráfico + Pendentes */}
+      <div className="space-y-5">
+
       {/* Bloco 3 — Resultado do Mês */}
       {loading ? (
-        <div className="skeleton h-28 rounded-2xl" />
+        <div className="skeleton h-20 rounded-2xl" />
       ) : (
-        <div className={`rounded-2xl p-5 ${isPositive ? 'bg-emerald-700' : 'bg-accent'}`}>
+        <div className={`rounded-2xl p-4 ${isPositive ? 'bg-emerald-700' : 'bg-accent'}`}>
           <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-white/60 mb-1">Resultado do mês</p>
-          <p className="font-display font-semibold text-[clamp(28px,6vw,38px)] tracking-tight text-white leading-none mb-2">
+          <p className="font-display font-semibold text-[clamp(22px,4vw,28px)] tracking-tight text-white leading-none mb-2">
             {isPositive ? '+' : '–'}&nbsp;R$&nbsp;{fmt(Math.abs(resultado.resultado))}
           </p>
           <p className="text-xs text-white/70">
@@ -292,6 +300,8 @@ export default function HojeAdmin() {
           )}
         </>
       )}
+
+      </div>{/* fim coluna direita */}
 
       {/* Caixa BottomSheet */}
       <BottomSheet open={caixaOpen} onClose={() => setCaixaOpen(false)} title={editCaixaId ? 'Editar Caixa' : 'Registrar Caixa'}>

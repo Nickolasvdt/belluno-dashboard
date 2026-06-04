@@ -44,8 +44,9 @@ function IconConta({ active }: { active: boolean }) {
 
 const adminTabs = [
   { href: '/',           label: 'Hoje',   Icon: IconHoje },
-  { href: '/fechamento', label: 'Mês',    Icon: IconMes },
   { href: '/semana',     label: 'Semana', Icon: IconSemana },
+  { href: '/fechamento', label: 'Mês',    Icon: IconMes },
+  { href: '/conta',      label: 'Conta',  Icon: IconConta },
 ]
 
 const caixaTabs = [

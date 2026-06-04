@@ -410,27 +410,17 @@ export default function MesPage() {
       {/* ── FEED ── */}
       {tab === 'feed' && (
         <div className="space-y-3">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex gap-1 flex-wrap">
-              {([['todos', 'Todos'], ['insumo', 'Insumo'], ['funcionario', 'Func.'], ['conta', 'Conta']] as [FeedCat, string][]).map(([key, label]) => (
-                <button key={key} onClick={() => setFeedCat(key)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
-                    feedCat === key
-                      ? 'bg-gray-800 dark:bg-zinc-200 text-white dark:text-zinc-900 border-gray-800 dark:border-zinc-200'
-                      : 'bg-white dark:bg-[#171411] border-cream-200 dark:border-zinc-800 text-gray-500 dark:text-zinc-400 hover:border-gray-400'
-                  }`}>
-                  {label}
-                </button>
-              ))}
-            </div>
-            <button
-              onClick={() => { resetForm(); setOpen(true) }}
-              className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full bg-accent text-white hover:bg-accent-dark transition-all active:scale-95 shadow-sm shadow-accent/20"
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-              </svg>
-            </button>
+          <div className="flex gap-1 flex-wrap">
+            {([['todos', 'Todos'], ['insumo', 'Insumo'], ['funcionario', 'Func.'], ['conta', 'Conta']] as [FeedCat, string][]).map(([key, label]) => (
+              <button key={key} onClick={() => setFeedCat(key)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                  feedCat === key
+                    ? 'bg-gray-800 dark:bg-zinc-200 text-white dark:text-zinc-900 border-gray-800 dark:border-zinc-200'
+                    : 'bg-white dark:bg-[#171411] border-cream-200 dark:border-zinc-800 text-gray-500 dark:text-zinc-400 hover:border-gray-400'
+                }`}>
+                {label}
+              </button>
+            ))}
           </div>
 
           {loading ? (
@@ -444,19 +434,35 @@ export default function MesPage() {
               {filteredFeed.map(e => {
                 const key = `feed-${e.tipo}-${e.id}`
                 const confirming = deleteConfirm === key
+                const borderCls = e.tipo === 'insumo'
+                  ? 'border-l-[3px] border-l-amber-400'
+                  : e.tipo === 'funcionario'
+                  ? 'border-l-[3px] border-l-[#8B2020]'
+                  : 'border-l-[3px] border-l-slate-300 dark:border-l-slate-600'
+                const labelCls = e.tipo === 'insumo'
+                  ? 'text-amber-500'
+                  : e.tipo === 'funcionario'
+                  ? 'text-[#8B2020]'
+                  : 'text-slate-400 dark:text-slate-500'
                 return (
-                  <div key={key} className="flex items-center gap-3 px-4 py-3.5">
-                    <span className={`font-mono text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${tipoCls[e.tipo]}`}>
-                      {tipoLabel[e.tipo]}
-                    </span>
+                  <div key={key} className={`flex items-center gap-3 px-4 py-3.5 ${borderCls}`}>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{e.descricao}</p>
-                      <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
-                        {format(parseISO(e.date.slice(0, 10)), 'dd/MM', { locale: ptBR })}
-                        {e.semana ? ` · ${e.semana}` : ''}
-                        {e.tipo === 'conta' && e.diaVencimento ? ` · vence dia ${e.diaVencimento}` : ''}
-                        {e.tipo === 'conta' ? (e.pago ? ' · Pago' : ' · Pendente') : ''}
-                      </p>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{e.descricao}</p>
+                        {!confirming && (
+                          <span className={`font-mono text-[9px] uppercase tracking-widest shrink-0 ${labelCls}`}>
+                            {tipoLabel[e.tipo]}
+                          </span>
+                        )}
+                      </div>
+                      {!confirming && (
+                        <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
+                          {format(parseISO(e.date.slice(0, 10)), 'dd/MM', { locale: ptBR })}
+                          {e.semana ? ` · ${e.semana}` : ''}
+                          {e.tipo === 'conta' && e.diaVencimento ? ` · vence dia ${e.diaVencimento}` : ''}
+                          {e.tipo === 'conta' ? (e.pago ? ' · Pago' : ' · Pendente') : ''}
+                        </p>
+                      )}
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       {confirming ? (
@@ -476,20 +482,6 @@ export default function MesPage() {
         </div>
       )}
 
-      {/* Botão adicionar — abas não-feed */}
-      {tab !== 'feed' && (
-        <div className="flex justify-end">
-          <button
-            onClick={() => { resetForm(); setOpen(true) }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-accent text-white hover:bg-accent-dark transition-all active:scale-95"
-          >
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            Adicionar
-          </button>
-        </div>
-      )}
 
       {/* ── VENDAS ── */}
       {tab === 'vendas' && (
@@ -544,13 +536,12 @@ export default function MesPage() {
         <div className="space-y-3">
           {nomesFunc.length > 1 && (
             <div className="flex items-center gap-2">
-              <label className="text-xs font-medium text-gray-500 dark:text-zinc-500 shrink-0">Filtrar:</label>
               <select
                 value={funcFiltro}
                 onChange={e => setFuncFiltro(e.target.value)}
                 className="px-3 py-1.5 border border-cream-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 dark:text-white rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-accent/30 transition-all"
               >
-                <option value="todos">Todos</option>
+                <option value="todos">Todos funcionários</option>
                 {nomesFunc.map(n => <option key={n} value={n}>{n}</option>)}
               </select>
             </div>

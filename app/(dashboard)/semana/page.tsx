@@ -13,6 +13,25 @@ function fmt(v: number) {
 type VendaSemana = { semana: number; avista: number; ifood: number; noventa9: number; keeta: number; extra: number; debito: number; credito: number; pix: number; outros: number; total: number }
 type FuncSemana  = { nome: string; sem1: number; sem2: number; sem3: number; sem4: number; total: number }
 
+type CanalConfig = {
+  key: keyof Omit<VendaSemana, 'semana' | 'total'>
+  label: string
+  bar: string
+  text: string
+}
+
+const canaisConfig: CanalConfig[] = [
+  { key: 'avista',   label: 'À Vista', bar: 'bg-emerald-500',  text: 'text-emerald-600 dark:text-emerald-400' },
+  { key: 'pix',      label: 'PIX',     bar: 'bg-sky-500',      text: 'text-sky-600 dark:text-sky-400' },
+  { key: 'ifood',    label: 'iFood',   bar: 'bg-orange-500',   text: 'text-orange-600 dark:text-orange-400' },
+  { key: 'debito',   label: 'Débito',  bar: 'bg-violet-500',   text: 'text-violet-600 dark:text-violet-400' },
+  { key: 'credito',  label: 'Crédito', bar: 'bg-amber-500',    text: 'text-amber-600 dark:text-amber-400' },
+  { key: 'noventa9', label: '99food',  bar: 'bg-pink-500',     text: 'text-pink-600 dark:text-pink-400' },
+  { key: 'keeta',    label: 'Keeta',   bar: 'bg-teal-500',     text: 'text-teal-600 dark:text-teal-400' },
+  { key: 'extra',    label: 'Extra',   bar: 'bg-indigo-500',   text: 'text-indigo-600 dark:text-indigo-400' },
+  { key: 'outros',   label: 'Outros',  bar: 'bg-gray-400',     text: 'text-gray-500 dark:text-zinc-400' },
+]
+
 export default function SemanaPage() {
   const [ref, setRef]         = useState(startOfMonth(new Date()))
   const [vendas, setVendas]   = useState<VendaSemana[]>([])
@@ -72,6 +91,8 @@ export default function SemanaPage() {
   const tdCls = 'px-3 py-2.5 text-right text-xs text-gray-700 dark:text-zinc-300 whitespace-nowrap'
   const tdTotalCls = 'px-3 py-2.5 text-right text-xs font-bold text-gray-800 dark:text-gray-100 whitespace-nowrap'
 
+  const vendasComDados = vendas.filter(v => v.total > 0)
+
   return (
     <div className="space-y-6">
 
@@ -87,6 +108,64 @@ export default function SemanaPage() {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="9,18 15,12 9,6"/></svg>
         </button>
       </div>
+
+      {/* Receita por Canal — cards visuais */}
+      <section>
+        <p className="font-mono text-[10px] tracking-[0.16em] uppercase text-mute mb-3">Receita por Canal</p>
+        {loading ? (
+          <div className="grid grid-cols-2 gap-3">
+            {[1,2,3,4].map(i => <div key={i} className="skeleton h-36 rounded-2xl"/>)}
+          </div>
+        ) : vendasComDados.length === 0 ? (
+          <div className="bg-white dark:bg-[#171411] rounded-2xl border border-cream-200 dark:border-white/[0.06] p-8 text-center shadow-sm">
+            <p className="text-sm text-gray-400 dark:text-zinc-500">Sem vendas neste mês</p>
+          </div>
+        ) : (
+          <div className={`grid gap-3 ${vendasComDados.length >= 3 ? 'grid-cols-2 md:grid-cols-4' : vendasComDados.length === 2 ? 'grid-cols-2' : 'grid-cols-1 max-w-sm'}`}>
+            {vendasComDados.map(semana => {
+              const canaisAtivos = canaisConfig
+                .map(c => ({ ...c, valor: semana[c.key] }))
+                .filter(c => c.valor > 0)
+                .sort((a, b) => b.valor - a.valor)
+
+              return (
+                <div key={semana.semana} className="bg-white dark:bg-[#171411] rounded-2xl border border-cream-200 dark:border-white/[0.06] shadow-sm p-4">
+                  <div className="mb-3">
+                    <p className="font-mono text-[10px] uppercase tracking-widest text-gray-400 dark:text-zinc-500">Semana {semana.semana}</p>
+                    <p className="font-display font-bold text-lg text-gray-800 dark:text-gray-100 leading-tight mt-0.5">
+                      R$ {fmt(semana.total)}
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    {canaisAtivos.map(canal => {
+                      const pct = semana.total > 0 ? Math.round((canal.valor / semana.total) * 100) : 0
+                      return (
+                        <div key={canal.key}>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[11px] font-medium text-gray-600 dark:text-zinc-400">{canal.label}</span>
+                            <span className={`font-mono text-[10px] font-semibold ${canal.text}`}>{pct}%</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 h-1.5 bg-cream-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full rounded-full ${canal.bar}`}
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
+                            <span className="font-mono text-[10px] text-gray-500 dark:text-zinc-500 w-16 text-right shrink-0">
+                              {canal.valor.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                            </span>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </section>
 
       {/* Card Vendas por Semana */}
       <section>
