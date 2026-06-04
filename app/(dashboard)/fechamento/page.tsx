@@ -105,21 +105,24 @@ export default function MesPage() {
   const [outros, setOutros]         = useState(0)
   const [obsVenda, setObsVenda]     = useState('')
   const [colaboradores, setColaboradores] = useState<{ id: number; nome: string }[]>([])
+  const [fechamentosDia, setFechamentosDia] = useState<{ avista: number; ifood: number; noventa9: number; keeta: number; extra: number; pizzas: number }[]>([])
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
     try {
       const qs = `mes=${mes}&ano=${ano}`
-      const [v, f, i, c] = await Promise.all([
+      const [v, f, i, c, fd] = await Promise.all([
         fetch(`/api/fechamento/vendas?${qs}`).then(r => r.json()),
         fetch(`/api/fechamento/funcionarios?${qs}`).then(r => r.json()),
         fetch(`/api/fechamento/insumos?${qs}`).then(r => r.json()),
         fetch(`/api/fechamento/contas?${qs}`).then(r => r.json()),
+        fetch(`/api/fechamento-dia?${qs}`).then(r => r.json()),
       ])
       setVendas(Array.isArray(v) ? v.sort((a: Venda, b: Venda) => new Date(b.date).getTime() - new Date(a.date).getTime()) : [])
       setFuncionarios(Array.isArray(f) ? f : [])
       setInsumos(Array.isArray(i) ? i : [])
       setContas(Array.isArray(c) ? c.sort((a: Conta, b: Conta) => (a.diaVencimento ?? 99) - (b.diaVencimento ?? 99)) : [])
+      setFechamentosDia(Array.isArray(fd) ? fd : [])
     } finally { setLoading(false) }
   }, [mes, ano])
 
@@ -132,15 +135,17 @@ export default function MesPage() {
       .catch(() => {})
   }, [])
 
-  const totalBruto   = r2(vendas.reduce((s, v) => r2(s + v.avista + v.debito + v.credito + v.pix + v.ifood + v.outros), 0))
-  const totalTaxas   = r2(vendas.reduce((s, v) => r2(s + v.taxas), 0))
-  const receita      = r2(totalBruto - totalTaxas)
+  const totalBruto    = r2(vendas.reduce((s, v) => r2(s + v.avista + v.debito + v.credito + v.pix + v.ifood + v.outros), 0))
+  const totalTaxas    = r2(vendas.reduce((s, v) => r2(s + v.taxas), 0))
+  const receitaFechs  = r2(fechamentosDia.reduce((s, f) => r2(s + f.avista + f.ifood + f.noventa9 + f.keeta + f.extra), 0))
+  const receita       = r2(totalBruto - totalTaxas + receitaFechs)
   const totalFunc    = r2(funcionarios.reduce((s, f) => r2(s + f.valor), 0))
   const totalInsumos = r2(insumos.reduce((s, i) => r2(s + i.valor), 0))
   const totalContas  = r2(contas.reduce((s, c) => r2(s + c.valor), 0))
   const despesas     = r2(totalFunc + totalInsumos + totalContas)
   const resultado    = r2(receita - despesas)
-  const totalPizzas  = vendas.reduce((s, v) => s + v.pizzas, 0)
+  const totalPizzas  = vendas.reduce((s, v) => s + v.pizzas, 0) +
+                     fechamentosDia.reduce((s, f) => s + f.pizzas, 0)
   const isPositive   = resultado >= 0
 
   const feedEntries: FeedEntry[] = [
