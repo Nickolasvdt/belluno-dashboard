@@ -78,6 +78,7 @@ export default function HojeCaixa() {
     <div className="space-y-4">
       <div className="skeleton h-7 w-24 rounded-lg" />
       <div className="skeleton h-40 rounded-2xl" />
+      <div className="skeleton h-40 rounded-2xl" />
     </div>
   )
 
@@ -124,6 +125,23 @@ export default function HojeCaixa() {
               </div>
             ))}
           </div>
+
+          {(hoje.diferenca != null || hoje.observacao) && (
+            <div className="px-5 py-3 border-t border-cream-200 dark:border-white/[0.05] flex flex-wrap gap-3">
+              {hoje.diferenca != null && (
+                <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
+                  hoje.diferenca === 0 ? 'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400' :
+                  hoje.diferenca > 0   ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400' :
+                  'bg-red-50 dark:bg-red-900/20 text-accent dark:text-red-400'
+                }`}>
+                  Diferença: {hoje.diferenca >= 0 ? '+' : ''}R$ {fmt(hoje.diferenca)}
+                </span>
+              )}
+              {hoje.observacao && (
+                <span className="text-xs text-gray-400 dark:text-zinc-500 italic">{hoje.observacao}</span>
+              )}
+            </div>
+          )}
         </div>
       ) : (
         <div className="bg-white dark:bg-[#171411] rounded-2xl border border-dashed border-cream-300 dark:border-zinc-700 p-8 text-center shadow-sm">
@@ -157,6 +175,7 @@ export default function HojeCaixa() {
                           <span className="text-emerald-600 dark:text-emerald-400">+{fmt(r.entradas)}</span>
                           <span className="mx-1 text-gray-300 dark:text-zinc-700">·</span>
                           <span className="text-accent">−{fmt(r.saidas)}</span>
+                          {r.observacao && <span className="ml-1 italic"> · {r.observacao}</span>}
                         </p>
                       </div>
                       <p className="text-sm font-bold text-gray-800 dark:text-gray-100 shrink-0">R$ {fmt(r.fechamento)}</p>
