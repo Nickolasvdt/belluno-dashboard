@@ -106,9 +106,11 @@ export default function MesPage() {
   const [obsVenda, setObsVenda]     = useState('')
   const [colaboradores, setColaboradores] = useState<{ id: number; nome: string }[]>([])
   const [fechamentosDia, setFechamentosDia] = useState<{ avista: number; ifood: number; noventa9: number; keeta: number; extra: number; pizzas: number }[]>([])
+  const [funcFiltro, setFuncFiltro] = useState<string>('todos')
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
+    setFuncFiltro('todos')
     try {
       const qs = `mes=${mes}&ano=${ano}`
       const [v, f, i, c, fd] = await Promise.all([
@@ -147,6 +149,12 @@ export default function MesPage() {
   const totalPizzas  = vendas.reduce((s, v) => s + v.pizzas, 0) +
                      fechamentosDia.reduce((s, f) => s + f.pizzas, 0)
   const isPositive   = resultado >= 0
+
+  const nomesFunc = Array.from(new Set(funcionarios.map(f => f.nome))).sort()
+  const funcionariosFiltrados = funcFiltro === 'todos'
+    ? funcionarios
+    : funcionarios.filter(f => f.nome === funcFiltro)
+  const totalFuncFiltrado = r2(funcionariosFiltrados.reduce((s, f) => r2(s + f.valor), 0))
 
   const feedEntries: FeedEntry[] = [
     ...insumos.map(i => ({ id: i.id, tipo: 'insumo' as const, date: i.date, descricao: i.fornecedor, valor: i.valor })),
@@ -533,43 +541,64 @@ export default function MesPage() {
 
       {/* ── FUNCIONÁRIOS ── */}
       {tab === 'funcionarios' && (
-        loading ? (
-          <div className="space-y-2">{[1,2,3].map(i => <div key={i} className="skeleton h-14 rounded-xl"/>)}</div>
-        ) : funcionarios.length === 0 ? (
-          <div className="bg-white dark:bg-[#171411] rounded-2xl border border-cream-200 dark:border-white/[0.06] p-10 text-center shadow-sm">
-            <p className="text-sm text-gray-400 dark:text-zinc-500">{emptyMsg.funcionarios}</p>
-          </div>
-        ) : (
-          <div className="bg-white dark:bg-[#171411] rounded-2xl border border-cream-200 dark:border-white/[0.06] divide-y divide-cream-200 dark:divide-white/[0.04] overflow-hidden shadow-sm">
-            {funcionarios.map(f => {
-              const dkey = `funcionarios-${f.id}`
-              const confirming = deleteConfirm === dkey
-              return (
-                <div key={f.id} className="flex items-center gap-3 px-4 py-3.5">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{f.nome}</p>
-                    {!confirming && (
-                      <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
-                        {format(parseISO(f.date.slice(0, 10)), 'dd/MM', { locale: ptBR })}
-                        {f.semana && ` · ${f.semana}`}
-                      </p>
-                    )}
+        <div className="space-y-3">
+          {nomesFunc.length > 1 && (
+            <div className="flex items-center gap-2">
+              <label className="text-xs font-medium text-gray-500 dark:text-zinc-500 shrink-0">Filtrar:</label>
+              <select
+                value={funcFiltro}
+                onChange={e => setFuncFiltro(e.target.value)}
+                className="px-3 py-1.5 border border-cream-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 dark:text-white rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-accent/30 transition-all"
+              >
+                <option value="todos">Todos</option>
+                {nomesFunc.map(n => <option key={n} value={n}>{n}</option>)}
+              </select>
+            </div>
+          )}
+          {loading ? (
+            <div className="space-y-2">{[1,2,3].map(i => <div key={i} className="skeleton h-14 rounded-xl"/>)}</div>
+          ) : funcionariosFiltrados.length === 0 ? (
+            <div className="bg-white dark:bg-[#171411] rounded-2xl border border-cream-200 dark:border-white/[0.06] p-10 text-center shadow-sm">
+              <p className="text-sm text-gray-400 dark:text-zinc-500">{emptyMsg.funcionarios}</p>
+            </div>
+          ) : (
+            <div className="bg-white dark:bg-[#171411] rounded-2xl border border-cream-200 dark:border-white/[0.06] divide-y divide-cream-200 dark:divide-white/[0.04] overflow-hidden shadow-sm">
+              {funcionariosFiltrados.map(f => {
+                const dkey = `funcionarios-${f.id}`
+                const confirming = deleteConfirm === dkey
+                return (
+                  <div key={f.id} className="flex items-center gap-3 px-4 py-3.5">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{f.nome}</p>
+                      {!confirming && (
+                        <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
+                          {format(parseISO(f.date.slice(0, 10)), 'dd/MM', { locale: ptBR })}
+                          {f.semana && ` · ${f.semana}`}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {confirming ? (
+                        <ConfirmDelete onCancel={() => setDeleteConfirm(null)} onConfirm={() => handleDelete('funcionarios', f.id)}/>
+                      ) : (
+                        <>
+                          <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">R$ {fmt(f.valor)}</p>
+                          <RowActions onEdit={() => openEdit(f)} onDelete={() => setDeleteConfirm(dkey)}/>
+                        </>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    {confirming ? (
-                      <ConfirmDelete onCancel={() => setDeleteConfirm(null)} onConfirm={() => handleDelete('funcionarios', f.id)}/>
-                    ) : (
-                      <>
-                        <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">R$ {fmt(f.valor)}</p>
-                        <RowActions onEdit={() => openEdit(f)} onDelete={() => setDeleteConfirm(dkey)}/>
-                      </>
-                    )}
-                  </div>
+                )
+              })}
+              {funcFiltro !== 'todos' && (
+                <div className="flex items-center justify-between px-4 py-3 border-t border-cream-200 dark:border-white/[0.05] bg-cream-50 dark:bg-zinc-900/40">
+                  <p className="text-xs text-gray-500 dark:text-zinc-400 font-medium">Total — {funcFiltro}</p>
+                  <p className="text-sm font-bold text-accent">R$ {fmt(totalFuncFiltrado)}</p>
                 </div>
-              )
-            })}
-          </div>
-        )
+              )}
+            </div>
+          )}
+        </div>
       )}
 
       {/* ── INSUMOS ── */}
