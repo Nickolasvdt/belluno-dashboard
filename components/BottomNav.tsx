@@ -13,15 +13,6 @@ function IconHoje({ active }: { active: boolean }) {
   )
 }
 
-function IconCaixa({ active }: { active: boolean }) {
-  return (
-    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="6" width="20" height="13" rx="2" fill={active ? 'currentColor' : 'none'} />
-      <line x1="2" y1="11" x2="22" y2="11" stroke={active ? 'white' : 'currentColor'} />
-    </svg>
-  )
-}
-
 function IconMes({ active }: { active: boolean }) {
   return (
     <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
@@ -38,16 +29,6 @@ function IconSemana({ active }: { active: boolean }) {
       <rect x="2" y="12" width="4" height="9" rx="1" fill={active ? 'currentColor' : 'none'} />
       <rect x="9" y="7" width="4" height="14" rx="1" fill={active ? 'currentColor' : 'none'} />
       <rect x="16" y="3" width="4" height="18" rx="1" fill={active ? 'currentColor' : 'none'} />
-    </svg>
-  )
-}
-
-function IconGastos({ active }: { active: boolean }) {
-  return (
-    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="4" y="4" width="16" height="16" rx="3" fill={active ? 'currentColor' : 'none'} />
-      <line x1="12" y1="9" x2="12" y2="15" stroke={active ? 'white' : 'currentColor'} />
-      <line x1="9" y1="12" x2="15" y2="12" stroke={active ? 'white' : 'currentColor'} />
     </svg>
   )
 }
