@@ -104,6 +104,7 @@ export default function MesPage() {
   const [diaVenc, setDiaVenc]       = useState('')
   const [outros, setOutros]         = useState(0)
   const [obsVenda, setObsVenda]     = useState('')
+  const [colaboradores, setColaboradores] = useState<{ id: number; nome: string }[]>([])
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
@@ -123,6 +124,13 @@ export default function MesPage() {
   }, [mes, ano])
 
   useEffect(() => { fetchAll() }, [fetchAll])
+
+  useEffect(() => {
+    fetch('/api/colaboradores?ativo=true')
+      .then(r => r.json())
+      .then(data => { if (Array.isArray(data)) setColaboradores(data) })
+      .catch(() => {})
+  }, [])
 
   const totalBruto   = r2(vendas.reduce((s, v) => r2(s + v.avista + v.debito + v.credito + v.pix + v.ifood + v.outros), 0))
   const totalTaxas   = r2(vendas.reduce((s, v) => r2(s + v.taxas), 0))
@@ -701,8 +709,11 @@ export default function MesPage() {
           {tab === 'funcionarios' && (
             <>
               <div>
-                <label className="text-xs font-medium text-gray-500 dark:text-zinc-500 mb-1.5 block">Nome</label>
-                <input type="text" required value={nome} onChange={e => setNome(e.target.value)} className={inp} />
+                <label className="text-xs font-medium text-gray-500 dark:text-zinc-500 mb-1.5 block">Funcionário</label>
+                <select required value={nome} onChange={e => setNome(e.target.value)} className={inp}>
+                  <option value="">Selecionar funcionário...</option>
+                  {colaboradores.map(c => <option key={c.id} value={c.nome}>{c.nome}</option>)}
+                </select>
               </div>
               <CurrencyInput label="Valor" value={valor} onChange={setValor} required />
               <div>
@@ -759,8 +770,11 @@ export default function MesPage() {
           {tab === 'feed' && (editItem?.tipo === 'funcionario' || (!editItem && feedCat === 'funcionario')) && (
             <>
               <div>
-                <label className="text-xs font-medium text-gray-500 dark:text-zinc-500 mb-1.5 block">Nome</label>
-                <input type="text" required value={nome} onChange={e => setNome(e.target.value)} className={inp} />
+                <label className="text-xs font-medium text-gray-500 dark:text-zinc-500 mb-1.5 block">Funcionário</label>
+                <select required value={nome} onChange={e => setNome(e.target.value)} className={inp}>
+                  <option value="">Selecionar funcionário...</option>
+                  {colaboradores.map(c => <option key={c.id} value={c.nome}>{c.nome}</option>)}
+                </select>
               </div>
               <CurrencyInput label="Valor" value={valor} onChange={setValor} required />
               <div>

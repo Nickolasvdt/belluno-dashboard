@@ -62,6 +62,15 @@ export default function QuickAddFAB() {
   const [saidas, setSaidas]             = useState(0)
   const [obsCaixa, setObsCaixa]         = useState('')
 
+  const [colaboradores, setColaboradores] = useState<{ id: number; nome: string }[]>([])
+
+  useEffect(() => {
+    fetch('/api/colaboradores?ativo=true')
+      .then(r => r.json())
+      .then(data => { if (Array.isArray(data)) setColaboradores(data) })
+      .catch(() => {})
+  }, [])
+
   useEffect(() => {
     if (cat === 'caixa') {
       fetch('/api/caixa')
@@ -172,15 +181,34 @@ export default function QuickAddFAB() {
               <input type="date" value={date} onChange={e => setDate(e.target.value)} className={inp} />
             </div>
 
-            {(cat === 'insumo' || cat === 'funcionario' || cat === 'conta') && (
+            {(cat === 'insumo' || cat === 'conta') && (
               <>
                 <div>
                   <label className="text-xs font-medium text-mute dark:text-zinc-500 mb-1.5 block">
-                    {cat === 'insumo' ? 'Fornecedor' : cat === 'funcionario' ? 'Nome' : 'Despesa'}
+                    {cat === 'insumo' ? 'Fornecedor' : 'Despesa'}
                   </label>
                   <input type="text" required value={descricao} onChange={e => setDescricao(e.target.value)}
                     placeholder={cat === 'insumo' ? 'PMG, Sacolão, CristauLat...' : ''}
                     className={inp} />
+                </div>
+                <CurrencyInput label="Valor" value={valor} onChange={setValor} required />
+              </>
+            )}
+
+            {cat === 'funcionario' && (
+              <>
+                <div>
+                  <label className="text-xs font-medium text-mute dark:text-zinc-500 mb-1.5 block">Funcionário</label>
+                  <select
+                    required value={descricao}
+                    onChange={e => setDescricao(e.target.value)}
+                    className={inp}
+                  >
+                    <option value="">Selecionar funcionário...</option>
+                    {colaboradores.map(c => (
+                      <option key={c.id} value={c.nome}>{c.nome}</option>
+                    ))}
+                  </select>
                 </div>
                 <CurrencyInput label="Valor" value={valor} onChange={setValor} required />
               </>
