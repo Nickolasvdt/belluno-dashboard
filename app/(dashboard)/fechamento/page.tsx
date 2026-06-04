@@ -235,7 +235,7 @@ export default function MesPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setSubmitting(true)
-    const feedType = editItem?.tipo ?? (feedCat === 'funcionario' ? 'funcionario' : feedCat === 'conta' ? 'conta' : 'insumo')
+    const feedType = editItem?.tipo ?? 'insumo'
     const activeTab = tab === 'feed' ? feedType : tab
     try {
       const method = editItem ? 'PUT' : 'POST'
