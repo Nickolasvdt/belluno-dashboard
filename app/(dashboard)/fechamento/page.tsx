@@ -6,9 +6,8 @@ import { ptBR } from 'date-fns/locale'
 import BottomSheet from '@/components/BottomSheet'
 import CurrencyInput from '@/components/CurrencyInput'
 
-type Tab     = 'feed' | 'vendas' | 'funcionarios' | 'insumos' | 'contas'
-type FeedCat = 'todos' | 'insumo' | 'funcionario' | 'conta'
-type Metodo  = 'avista' | 'debito' | 'credito' | 'pix' | 'ifood'
+type Tab    = 'feed' | 'vendas' | 'funcionarios' | 'insumos' | 'contas'
+type Metodo = 'avista' | 'debito' | 'credito' | 'pix' | 'ifood'
 
 type Venda       = { id: number; date: string; avista: number; debito: number; credito: number; pix: number; ifood: number; outros: number; taxas: number; pizzas: number; observacao?: string | null }
 type Funcionario = { id: number; date: string; nome: string; semana?: string | null; valor: number }
@@ -26,13 +25,28 @@ function fmtK(v: number) {
 
 const inp = 'w-full px-3.5 py-2.5 border border-cream-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 dark:text-white rounded-xl text-sm placeholder:text-gray-400 dark:placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-accent/30 focus:border-accent/50 transition-all'
 
-const tipoCls: Record<'insumo' | 'funcionario' | 'conta', string> = {
-  insumo:      'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400',
-  funcionario: 'bg-red-50 dark:bg-red-900/20 text-accent dark:text-red-400',
-  conta:       'bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400',
+const tipoBg: Record<'insumo' | 'funcionario' | 'conta', string> = {
+  insumo:      'bg-amber-100 dark:bg-amber-900/25 text-amber-600 dark:text-amber-400',
+  funcionario: 'bg-red-100 dark:bg-red-900/25 text-[#8B2020] dark:text-red-400',
+  conta:       'bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-slate-400',
 }
-const tipoLabel: Record<'insumo' | 'funcionario' | 'conta', string> = {
-  insumo: 'Insumo', funcionario: 'Func.', conta: 'Conta',
+
+function TipoIcon({ tipo }: { tipo: 'insumo' | 'funcionario' | 'conta' }) {
+  if (tipo === 'insumo') return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 2 3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/>
+    </svg>
+  )
+  if (tipo === 'funcionario') return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0112 0v2"/>
+    </svg>
+  )
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="12" y2="17"/>
+    </svg>
+  )
 }
 
 function RowActions({ onEdit, onDelete }: { onEdit: () => void; onDelete: () => void }) {
@@ -77,7 +91,6 @@ export default function MesPage() {
   const [open, setOpen] = useState(false)
   const [editItem, setEditItem] = useState<any>(null)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
-  const [feedCat, setFeedCat] = useState<FeedCat>('todos')
   const [viewMode, setViewMode] = useState<'geral' | 'filtrado'>('geral')
 
   const mes = ref.getMonth() + 1
@@ -162,7 +175,7 @@ export default function MesPage() {
     ...contas.map(c => ({ id: c.id, tipo: 'conta' as const, date: c.date, descricao: c.despesa, valor: c.valor, pago: c.pago, diaVencimento: c.diaVencimento })),
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
-  const filteredFeed = feedEntries.filter(e => feedCat === 'todos' || e.tipo === feedCat)
+  const filteredFeed = feedEntries
 
   const tabs: { key: Tab; label: string; subtotal: string }[] = [
     { key: 'feed',        label: 'Feed',    subtotal: `${feedEntries.length}` },
@@ -279,7 +292,7 @@ export default function MesPage() {
     fetchAll()
   }
 
-  const feedTypeForSubmit = editItem?.tipo ?? (feedCat === 'funcionario' ? 'funcionario' : feedCat === 'conta' ? 'conta' : 'insumo')
+  const feedTypeForSubmit = editItem?.tipo ?? 'insumo'
   const activeTabForSubmit = tab === 'feed' ? feedTypeForSubmit : tab
   const canSubmitForm = (() => {
     if (activeTabForSubmit === 'vendas') return valor > 0
@@ -290,7 +303,7 @@ export default function MesPage() {
   })()
 
   const sheetTitle: Record<string, string> = {
-    feed:         editItem ? `Editar ${editItem.tipo === 'insumo' ? 'Insumo' : editItem.tipo === 'funcionario' ? 'Funcionário' : 'Conta'}` : feedCat === 'funcionario' ? 'Novo Funcionário' : feedCat === 'conta' ? 'Nova Conta' : 'Novo Insumo',
+    feed:         editItem ? `Editar ${editItem.tipo === 'insumo' ? 'Insumo' : editItem.tipo === 'funcionario' ? 'Funcionário' : 'Conta'}` : 'Editar',
     vendas:       editItem ? 'Editar Venda'       : 'Nova Venda',
     funcionarios: editItem ? 'Editar Funcionário' : 'Novo Funcionário',
     insumos:      editItem ? 'Editar Insumo'      : 'Novo Insumo',
@@ -409,77 +422,50 @@ export default function MesPage() {
 
       {/* ── FEED ── */}
       {tab === 'feed' && (
-        <div className="space-y-3">
-          <div className="flex gap-1 flex-wrap">
-            {([['todos', 'Todos'], ['insumo', 'Insumo'], ['funcionario', 'Func.'], ['conta', 'Conta']] as [FeedCat, string][]).map(([key, label]) => (
-              <button key={key} onClick={() => setFeedCat(key)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
-                  feedCat === key
-                    ? 'bg-gray-800 dark:bg-zinc-200 text-white dark:text-zinc-900 border-gray-800 dark:border-zinc-200'
-                    : 'bg-white dark:bg-[#171411] border-cream-200 dark:border-zinc-800 text-gray-500 dark:text-zinc-400 hover:border-gray-400'
-                }`}>
-                {label}
-              </button>
-            ))}
+        loading ? (
+          <div className="space-y-2">{[1,2,3,4].map(i => <div key={i} className="skeleton h-16 rounded-xl"/>)}</div>
+        ) : filteredFeed.length === 0 ? (
+          <div className="bg-white dark:bg-[#171411] rounded-2xl border border-cream-200 dark:border-white/[0.06] p-10 text-center shadow-sm">
+            <p className="text-sm text-gray-400 dark:text-zinc-500">{emptyMsg.feed}</p>
           </div>
-
-          {loading ? (
-            <div className="space-y-2">{[1,2,3,4].map(i => <div key={i} className="skeleton h-14 rounded-xl"/>)}</div>
-          ) : filteredFeed.length === 0 ? (
-            <div className="bg-white dark:bg-[#171411] rounded-2xl border border-cream-200 dark:border-white/[0.06] p-10 text-center shadow-sm">
-              <p className="text-sm text-gray-400 dark:text-zinc-500">{emptyMsg.feed}</p>
-            </div>
-          ) : (
-            <div className="bg-white dark:bg-[#171411] rounded-2xl border border-cream-200 dark:border-white/[0.06] divide-y divide-cream-200 dark:divide-white/[0.04] overflow-hidden shadow-sm">
-              {filteredFeed.map(e => {
-                const key = `feed-${e.tipo}-${e.id}`
-                const confirming = deleteConfirm === key
-                const borderCls = e.tipo === 'insumo'
-                  ? 'border-l-[3px] border-l-amber-400'
-                  : e.tipo === 'funcionario'
-                  ? 'border-l-[3px] border-l-[#8B2020]'
-                  : 'border-l-[3px] border-l-slate-300 dark:border-l-slate-600'
-                const labelCls = e.tipo === 'insumo'
-                  ? 'text-amber-500'
-                  : e.tipo === 'funcionario'
-                  ? 'text-[#8B2020]'
-                  : 'text-slate-400 dark:text-slate-500'
-                return (
-                  <div key={key} className={`flex items-center gap-3 px-4 py-3.5 ${borderCls}`}>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{e.descricao}</p>
-                        {!confirming && (
-                          <span className={`font-mono text-[9px] uppercase tracking-widest shrink-0 ${labelCls}`}>
-                            {tipoLabel[e.tipo]}
-                          </span>
-                        )}
-                      </div>
-                      {!confirming && (
-                        <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
-                          {format(parseISO(e.date.slice(0, 10)), 'dd/MM', { locale: ptBR })}
-                          {e.semana ? ` · ${e.semana}` : ''}
-                          {e.tipo === 'conta' && e.diaVencimento ? ` · vence dia ${e.diaVencimento}` : ''}
-                          {e.tipo === 'conta' ? (e.pago ? ' · Pago' : ' · Pendente') : ''}
-                        </p>
-                      )}
+        ) : (
+          <div className="bg-white dark:bg-[#171411] rounded-2xl border border-cream-200 dark:border-white/[0.06] divide-y divide-cream-200 dark:divide-white/[0.04] overflow-hidden shadow-sm">
+            {filteredFeed.map(e => {
+              const key = `feed-${e.tipo}-${e.id}`
+              const confirming = deleteConfirm === key
+              return (
+                <div key={key} className="flex items-center gap-3.5 px-4 py-3.5">
+                  {!confirming && (
+                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${tipoBg[e.tipo]}`}>
+                      <TipoIcon tipo={e.tipo} />
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      {confirming ? (
-                        <ConfirmDelete onCancel={() => setDeleteConfirm(null)} onConfirm={() => handleDelete(e.tipo, e.id)}/>
-                      ) : (
-                        <>
-                          <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">R$ {fmt(e.valor)}</span>
-                          <RowActions onEdit={() => openEditFeed(e)} onDelete={() => setDeleteConfirm(key)}/>
-                        </>
-                      )}
-                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-gray-800 dark:text-gray-100 truncate">{e.descricao}</p>
+                    {!confirming && (
+                      <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
+                        {format(parseISO(e.date.slice(0, 10)), 'dd/MM', { locale: ptBR })}
+                        {e.semana ? ` · ${e.semana}` : ''}
+                        {e.tipo === 'conta' && e.diaVencimento ? ` · vence dia ${e.diaVencimento}` : ''}
+                        {e.tipo === 'conta' ? (e.pago ? ' · pago' : ' · pendente') : ''}
+                      </p>
+                    )}
                   </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    {confirming ? (
+                      <ConfirmDelete onCancel={() => setDeleteConfirm(null)} onConfirm={() => handleDelete(e.tipo, e.id)}/>
+                    ) : (
+                      <>
+                        <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">R$ {fmt(e.valor)}</span>
+                        <RowActions onEdit={() => openEditFeed(e)} onDelete={() => setDeleteConfirm(key)}/>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )
       )}
 
 
@@ -760,7 +746,7 @@ export default function MesPage() {
           )}
 
           {/* Contas */}
-          {(tab === 'contas' || (tab === 'feed' && (editItem?.tipo === 'conta' || (!editItem && feedCat === 'conta')))) && (
+          {(tab === 'contas' || (tab === 'feed' && editItem?.tipo === 'conta')) && (
             <>
               <div>
                 <label className="text-xs font-medium text-gray-500 dark:text-zinc-500 mb-1.5 block">Despesa</label>
@@ -780,8 +766,8 @@ export default function MesPage() {
             </>
           )}
 
-          {/* Feed — insumo (edição e novo) */}
-          {tab === 'feed' && (editItem?.tipo === 'insumo' || (!editItem && (feedCat === 'insumo' || feedCat === 'todos'))) && (
+          {/* Feed — insumo (apenas edição) */}
+          {tab === 'feed' && editItem?.tipo === 'insumo' && (
             <>
               <div>
                 <label className="text-xs font-medium text-gray-500 dark:text-zinc-500 mb-1.5 block">Fornecedor</label>
@@ -791,8 +777,8 @@ export default function MesPage() {
             </>
           )}
 
-          {/* Feed — funcionário (edição e novo) */}
-          {tab === 'feed' && (editItem?.tipo === 'funcionario' || (!editItem && feedCat === 'funcionario')) && (
+          {/* Feed — funcionário (apenas edição) */}
+          {tab === 'feed' && editItem?.tipo === 'funcionario' && (
             <>
               <div>
                 <label className="text-xs font-medium text-gray-500 dark:text-zinc-500 mb-1.5 block">Funcionário</label>

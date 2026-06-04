@@ -13,23 +13,18 @@ function fmt(v: number) {
 type VendaSemana = { semana: number; avista: number; ifood: number; noventa9: number; keeta: number; extra: number; debito: number; credito: number; pix: number; outros: number; total: number }
 type FuncSemana  = { nome: string; sem1: number; sem2: number; sem3: number; sem4: number; total: number }
 
-type CanalConfig = {
-  key: keyof Omit<VendaSemana, 'semana' | 'total'>
-  label: string
-  bar: string
-  text: string
-}
+type CanalCfg = { key: keyof Omit<VendaSemana, 'semana' | 'total'>; label: string; bar: string; dot: string }
 
-const canaisConfig: CanalConfig[] = [
-  { key: 'avista',   label: 'À Vista', bar: 'bg-emerald-500',  text: 'text-emerald-600 dark:text-emerald-400' },
-  { key: 'pix',      label: 'PIX',     bar: 'bg-sky-500',      text: 'text-sky-600 dark:text-sky-400' },
-  { key: 'ifood',    label: 'iFood',   bar: 'bg-orange-500',   text: 'text-orange-600 dark:text-orange-400' },
-  { key: 'debito',   label: 'Débito',  bar: 'bg-violet-500',   text: 'text-violet-600 dark:text-violet-400' },
-  { key: 'credito',  label: 'Crédito', bar: 'bg-amber-500',    text: 'text-amber-600 dark:text-amber-400' },
-  { key: 'noventa9', label: '99food',  bar: 'bg-pink-500',     text: 'text-pink-600 dark:text-pink-400' },
-  { key: 'keeta',    label: 'Keeta',   bar: 'bg-teal-500',     text: 'text-teal-600 dark:text-teal-400' },
-  { key: 'extra',    label: 'Extra',   bar: 'bg-indigo-500',   text: 'text-indigo-600 dark:text-indigo-400' },
-  { key: 'outros',   label: 'Outros',  bar: 'bg-gray-400',     text: 'text-gray-500 dark:text-zinc-400' },
+const canais: CanalCfg[] = [
+  { key: 'avista',   label: 'À Vista', bar: 'bg-emerald-500', dot: 'bg-emerald-500' },
+  { key: 'pix',      label: 'PIX',     bar: 'bg-sky-500',     dot: 'bg-sky-500' },
+  { key: 'ifood',    label: 'iFood',   bar: 'bg-orange-500',  dot: 'bg-orange-500' },
+  { key: 'debito',   label: 'Débito',  bar: 'bg-violet-500',  dot: 'bg-violet-500' },
+  { key: 'credito',  label: 'Crédito', bar: 'bg-amber-500',   dot: 'bg-amber-500' },
+  { key: 'noventa9', label: '99food',  bar: 'bg-pink-500',    dot: 'bg-pink-500' },
+  { key: 'keeta',    label: 'Keeta',   bar: 'bg-teal-500',    dot: 'bg-teal-500' },
+  { key: 'extra',    label: 'Extra',   bar: 'bg-indigo-500',  dot: 'bg-indigo-500' },
+  { key: 'outros',   label: 'Outros',  bar: 'bg-gray-400',    dot: 'bg-gray-400' },
 ]
 
 export default function SemanaPage() {
@@ -91,7 +86,7 @@ export default function SemanaPage() {
   const tdCls = 'px-3 py-2.5 text-right text-xs text-gray-700 dark:text-zinc-300 whitespace-nowrap'
   const tdTotalCls = 'px-3 py-2.5 text-right text-xs font-bold text-gray-800 dark:text-gray-100 whitespace-nowrap'
 
-  const vendasComDados = vendas.filter(v => v.total > 0)
+  const canaisAtivosGlobal = canais.filter(c => totalVendas[c.key] > 0)
 
   return (
     <div className="space-y-6">
@@ -109,65 +104,7 @@ export default function SemanaPage() {
         </button>
       </div>
 
-      {/* Receita por Canal — cards visuais */}
-      <section>
-        <p className="font-mono text-[10px] tracking-[0.16em] uppercase text-mute mb-3">Receita por Canal</p>
-        {loading ? (
-          <div className="grid grid-cols-2 gap-3">
-            {[1,2,3,4].map(i => <div key={i} className="skeleton h-36 rounded-2xl"/>)}
-          </div>
-        ) : vendasComDados.length === 0 ? (
-          <div className="bg-white dark:bg-[#171411] rounded-2xl border border-cream-200 dark:border-white/[0.06] p-8 text-center shadow-sm">
-            <p className="text-sm text-gray-400 dark:text-zinc-500">Sem vendas neste mês</p>
-          </div>
-        ) : (
-          <div className={`grid gap-3 ${vendasComDados.length >= 3 ? 'grid-cols-2 md:grid-cols-4' : vendasComDados.length === 2 ? 'grid-cols-2' : 'grid-cols-1 max-w-sm'}`}>
-            {vendasComDados.map(semana => {
-              const canaisAtivos = canaisConfig
-                .map(c => ({ ...c, valor: semana[c.key] }))
-                .filter(c => c.valor > 0)
-                .sort((a, b) => b.valor - a.valor)
-
-              return (
-                <div key={semana.semana} className="bg-white dark:bg-[#171411] rounded-2xl border border-cream-200 dark:border-white/[0.06] shadow-sm p-4">
-                  <div className="mb-3">
-                    <p className="font-mono text-[10px] uppercase tracking-widest text-gray-400 dark:text-zinc-500">Semana {semana.semana}</p>
-                    <p className="font-display font-bold text-lg text-gray-800 dark:text-gray-100 leading-tight mt-0.5">
-                      R$ {fmt(semana.total)}
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    {canaisAtivos.map(canal => {
-                      const pct = semana.total > 0 ? Math.round((canal.valor / semana.total) * 100) : 0
-                      return (
-                        <div key={canal.key}>
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-[11px] font-medium text-gray-600 dark:text-zinc-400">{canal.label}</span>
-                            <span className={`font-mono text-[10px] font-semibold ${canal.text}`}>{pct}%</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="flex-1 h-1.5 bg-cream-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-                              <div
-                                className={`h-full rounded-full ${canal.bar}`}
-                                style={{ width: `${pct}%` }}
-                              />
-                            </div>
-                            <span className="font-mono text-[10px] text-gray-500 dark:text-zinc-500 w-16 text-right shrink-0">
-                              {canal.valor.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                            </span>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        )}
-      </section>
-
-      {/* Card Vendas por Semana */}
+      {/* Vendas por Semana com distribuição por canal */}
       <section>
         <p className="font-mono text-[10px] tracking-[0.16em] uppercase text-mute mb-3">Vendas por Semana</p>
         <div className="bg-white dark:bg-[#171411] rounded-2xl border border-cream-200 dark:border-white/[0.06] shadow-sm overflow-hidden">
@@ -175,25 +112,30 @@ export default function SemanaPage() {
             <div className="p-5 space-y-2">{[1,2,3,4,5].map(i => <div key={i} className="skeleton h-8 rounded-lg"/>)}</div>
           ) : (
             <div className="overflow-x-auto scrollbar-hide">
-              <table className="w-full min-w-[380px]">
+              <table className="w-full min-w-[420px]">
                 <thead>
                   <tr className="border-b border-cream-200 dark:border-white/[0.04]">
                     <th className="px-4 py-2.5 text-left font-mono text-[10px] uppercase tracking-widest text-gray-400 dark:text-zinc-500">Canal</th>
-                    <th className={thCls}>Sem 1</th>
-                    <th className={thCls}>Sem 2</th>
-                    <th className={thCls}>Sem 3</th>
-                    <th className={thCls}>Sem 4</th>
+                    {vendas.map(v => <th key={v.semana} className={thCls}>Sem {v.semana}</th>)}
                     <th className={thCls}>Total</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-cream-200 dark:divide-white/[0.04]">
-                  {canalRows.filter(c => vendas.some(v => v[c.key] > 0) || totalVendas[c.key] > 0).map(canal => (
-                    <tr key={canal.key} className="hover:bg-cream-50/60 dark:hover:bg-white/[0.02]">
-                      <td className="px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-zinc-300">{canal.label}</td>
-                      {vendas.map(v => <td key={v.semana} className={tdCls}>{fmt(v[canal.key])}</td>)}
-                      <td className={tdTotalCls}>{fmt(totalVendas[canal.key])}</td>
-                    </tr>
-                  ))}
+                  {canalRows.filter(c => vendas.some(v => v[c.key] > 0) || totalVendas[c.key] > 0).map(canal => {
+                    const cfg = canais.find(c => c.key === canal.key)
+                    return (
+                      <tr key={canal.key} className="hover:bg-cream-50/60 dark:hover:bg-white/[0.02]">
+                        <td className="px-4 py-2.5">
+                          <div className="flex items-center gap-2">
+                            {cfg && <span className={`w-2 h-2 rounded-full shrink-0 ${cfg.dot}`} />}
+                            <span className="text-sm font-medium text-gray-700 dark:text-zinc-300">{canal.label}</span>
+                          </div>
+                        </td>
+                        {vendas.map(v => <td key={v.semana} className={tdCls}>{fmt(v[canal.key])}</td>)}
+                        <td className={tdTotalCls}>{fmt(totalVendas[canal.key])}</td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
                 <tfoot>
                   <tr className="border-t-2 border-cream-200 dark:border-white/[0.08] bg-cream-50 dark:bg-zinc-900/40">
@@ -201,14 +143,64 @@ export default function SemanaPage() {
                     {vendas.map(v => <td key={v.semana} className={tdTotalCls}>{fmt(v.total)}</td>)}
                     <td className={`${tdTotalCls} text-emerald-600 dark:text-emerald-400`}>{fmt(totalVendas.total)}</td>
                   </tr>
+                  {vendas.length > 0 && totalVendas.total > 0 && (
+                    <tr className="border-t border-cream-200 dark:border-white/[0.04] bg-cream-50/60 dark:bg-zinc-900/20">
+                      <td className="px-4 py-2 text-[10px] font-mono uppercase tracking-widest text-gray-400 dark:text-zinc-600 whitespace-nowrap">Distribuição</td>
+                      {vendas.map(v => (
+                        <td key={v.semana} className="px-3 py-2">
+                          {v.total > 0 ? (
+                            <div className="flex h-2 rounded-full overflow-hidden gap-px min-w-[48px]">
+                              {canaisAtivosGlobal
+                                .filter(c => v[c.key] > 0)
+                                .sort((a, b) => v[b.key] - v[a.key])
+                                .map(c => (
+                                  <div
+                                    key={c.key}
+                                    className={`h-full ${c.bar}`}
+                                    style={{ width: `${Math.round((v[c.key] / v.total) * 100)}%` }}
+                                    title={`${c.label}: ${Math.round((v[c.key] / v.total) * 100)}%`}
+                                  />
+                                ))}
+                            </div>
+                          ) : <span className="text-[10px] text-gray-300 dark:text-zinc-700">–</span>}
+                        </td>
+                      ))}
+                      <td className="px-3 py-2">
+                        {totalVendas.total > 0 && (
+                          <div className="flex h-2 rounded-full overflow-hidden gap-px min-w-[48px]">
+                            {canaisAtivosGlobal.map(c => (
+                              <div
+                                key={c.key}
+                                className={`h-full ${c.bar}`}
+                                style={{ width: `${Math.round((totalVendas[c.key] / totalVendas.total) * 100)}%` }}
+                                title={`${c.label}: ${Math.round((totalVendas[c.key] / totalVendas.total) * 100)}%`}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  )}
                 </tfoot>
               </table>
             </div>
           )}
         </div>
+
+        {/* Legenda dos canais ativos */}
+        {!loading && canaisAtivosGlobal.length > 0 && (
+          <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 px-1">
+            {canaisAtivosGlobal.map(c => (
+              <span key={c.key} className="flex items-center gap-1.5 text-[10px] text-gray-400 dark:text-zinc-500">
+                <span className={`w-2 h-2 rounded-full ${c.dot}`} />
+                {c.label}
+              </span>
+            ))}
+          </div>
+        )}
       </section>
 
-      {/* Card Funcionários por Semana */}
+      {/* Funcionários por Semana */}
       <section>
         <p className="font-mono text-[10px] tracking-[0.16em] uppercase text-mute mb-3">Funcionários por Semana</p>
         <div className="bg-white dark:bg-[#171411] rounded-2xl border border-cream-200 dark:border-white/[0.06] shadow-sm overflow-hidden">

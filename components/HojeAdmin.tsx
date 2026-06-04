@@ -119,7 +119,7 @@ export default function HojeAdmin() {
   const cxFechamento = r2(cxSaldoInicial + cxEntradas - cxSaidas)
 
   return (
-    <div className="md:grid md:grid-cols-2 md:gap-5 space-y-5 md:space-y-0">
+    <div className="md:grid md:grid-cols-[3fr_2fr] md:gap-6 space-y-5 md:space-y-0">
 
       {/* Coluna esquerda — Fechamento + Caixa */}
       <div className="space-y-5">

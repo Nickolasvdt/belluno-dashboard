@@ -172,7 +172,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
         <main className="flex-1 overflow-y-auto">
           <div
             key={pathname}
-            className="max-w-screen-md mx-auto px-4 pt-5 md:pb-10 md:px-8 md:pt-8 animate-slide-up"
+            className="max-w-screen-md md:max-w-none mx-auto md:mx-0 px-4 pt-5 md:pb-10 md:px-8 md:pt-8 animate-slide-up"
             style={{ paddingBottom: 'calc(6.5rem + env(safe-area-inset-bottom))' }}
           >
             {children}
